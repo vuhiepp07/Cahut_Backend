@@ -4,8 +4,17 @@ namespace Cahut_Backend.Models
 {
     public class SiteProvider : BaseProvider
     {
-        public SiteProvider(IConfiguration configuration, AppDbContext context) : base(configuration, context)
+        UserRepository product;
+        public UserRepository Product
         {
+            get
+            {
+                if (product == null)
+                {
+                    product = new UserRepository(Context);
+                }
+                return product;
+            }
         }
     }
 }

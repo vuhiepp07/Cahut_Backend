@@ -5,12 +5,10 @@ namespace Cahut_Backend.Repository
 {
     public abstract class BaseRepository
     {
-        protected IDbConnection connection;
-        protected AppDbContext dbContext;
-        public BaseRepository(IDbConnection connection, AppDbContext dbContext)
+        protected AppDbContext context;
+        public BaseRepository(AppDbContext context)
         {
-            this.connection = connection;
-            this.dbContext = dbContext;
+            this.context = context;
         }
     }
 }

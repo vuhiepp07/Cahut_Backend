@@ -4,14 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Cahut_Backend.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public abstract class BaseController : ControllerBase
+    public class BaseController : ControllerBase, IDisposable
     {
-        protected SiteProvider provider;
-        public BaseController(SiteProvider provider)
+        protected SiteProvider provider = new SiteProvider();
+        public void Dispose()
         {
-            this.provider = provider;
+            provider.Dispose();
         }
 
     }

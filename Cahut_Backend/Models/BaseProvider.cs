@@ -6,37 +6,24 @@ namespace Cahut_Backend.Models
 {
     public class BaseProvider : IDisposable
     {
-        IDbConnection connection;
-        protected AppDbContext dbContext;
-        protected IConfiguration configuration;
-
-        public BaseProvider(IConfiguration configuration, AppDbContext context)
-        {
-            this.dbContext = context;
-            this.configuration = configuration;
-        }
-
-        protected IDbConnection Connection
+        AppDbContext context;
+        protected AppDbContext Context
         {
             get
             {
-                if (connection is null)
+                if (context == null)
                 {
-                    connection = new SqlConnection(configuration.GetConnectionString("Cahut"));
+                    context = new AppDbContext();
                 }
-                return connection;
+                return context;
             }
         }
 
         public void Dispose()
         {
-            if (connection != null)
+            if (context != null)
             {
-                connection.Dispose();
-            }
-            if (dbContext != null)
-            {
-                dbContext.Dispose();
+                context.Dispose();
             }
         }
     }

@@ -1,6 +1,6 @@
 ﻿namespace Cahut_Backend
 {
-    public class Helper
+    public static class Helper
     {
     }
 }
