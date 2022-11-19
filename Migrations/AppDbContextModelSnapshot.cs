@@ -4,7 +4,6 @@ using Cahut_Backend.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -12,11 +11,9 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CahutBackend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20221118035618_InitDb")]
-    partial class InitDb
+    partial class AppDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -80,9 +77,6 @@ namespace CahutBackend.Migrations
                     b.HasIndex("GroupId");
 
                     b.HasIndex("MemberId");
-
-                    b.HasIndex("RoleId")
-                        .IsUnique();
 
                     b.ToTable("GroupDetail", (string)null);
                 });
@@ -172,15 +166,7 @@ namespace CahutBackend.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Cahut_Backend.Models.Role", "Role")
-                        .WithOne("GroupDetail")
-                        .HasForeignKey("Cahut_Backend.Models.GroupDetail", "RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Group");
-
-                    b.Navigation("Role");
 
                     b.Navigation("User");
                 });
@@ -197,12 +183,6 @@ namespace CahutBackend.Migrations
                 });
 
             modelBuilder.Entity("Cahut_Backend.Models.Group", b =>
-                {
-                    b.Navigation("GroupDetail")
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Cahut_Backend.Models.Role", b =>
                 {
                     b.Navigation("GroupDetail")
                         .IsRequired();

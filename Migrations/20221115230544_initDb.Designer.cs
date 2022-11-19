@@ -4,6 +4,7 @@ using Cahut_Backend.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CahutBackend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20221115230544_initDb")]
+    partial class initDb
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -26,11 +29,6 @@ namespace CahutBackend.Migrations
                 {
                     b.Property<string>("usr")
                         .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("EmailSended")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
 
                     b.Property<string>("pwd")
                         .IsRequired()
@@ -82,9 +80,6 @@ namespace CahutBackend.Migrations
                     b.HasIndex("GroupId");
 
                     b.HasIndex("MemberId");
-
-                    b.HasIndex("RoleId")
-                        .IsUnique();
 
                     b.ToTable("GroupDetail", (string)null);
                 });
@@ -145,6 +140,7 @@ namespace CahutBackend.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Phone")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserName")
@@ -173,15 +169,7 @@ namespace CahutBackend.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Cahut_Backend.Models.Role", "Role")
-                        .WithOne("GroupDetail")
-                        .HasForeignKey("Cahut_Backend.Models.GroupDetail", "RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Group");
-
-                    b.Navigation("Role");
 
                     b.Navigation("User");
                 });
@@ -198,12 +186,6 @@ namespace CahutBackend.Migrations
                 });
 
             modelBuilder.Entity("Cahut_Backend.Models.Group", b =>
-                {
-                    b.Navigation("GroupDetail")
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Cahut_Backend.Models.Role", b =>
                 {
                     b.Navigation("GroupDetail")
                         .IsRequired();

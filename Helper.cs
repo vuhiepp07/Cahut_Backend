@@ -1,6 +1,6 @@
 ﻿using Cahut_Backend.Models;
-using System.Net;
 using System.Net.Mail;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -8,7 +8,7 @@ namespace Cahut_Backend
 {
     public static class Helper
     {
-        public static string RandomString(int len)
+        public static string RandomStr(int len)
         {
             Random rand = new Random();
             string pattern = "qwertyuiopasdfghjklzxcvbnm1234567890";
@@ -18,7 +18,6 @@ namespace Cahut_Backend
                 arr[i] = pattern[rand.Next(pattern.Length)];
             }
             return string.Join(string.Empty, arr);
-
         }
 
         public static string SendEmails(EmailSender sender, EmailMessage obj, IConfiguration configuration)
@@ -32,7 +31,7 @@ namespace Cahut_Backend
             {
                 try
                 {
-                    MailMessage message = new MailMessage(new MailAddress(sender.usr, "Cahut"), new MailAddress(obj.EmailTo))
+                    MailMessage message = new MailMessage(new MailAddress(sender.usr, "TheShop"), new MailAddress(obj.EmailTo))
                     {
                         IsBodyHtml = true,
                         Subject = obj.Subject,
@@ -48,10 +47,10 @@ namespace Cahut_Backend
             }
         }
 
-        public static string Hash(string plaintext)
+        public static byte[] Hash(string plaintext)
         {
             HashAlgorithm algorithm = HashAlgorithm.Create("SHA-512");
-            return algorithm.ComputeHash(Encoding.ASCII.GetBytes(plaintext)).ToString();
+            return algorithm.ComputeHash(Encoding.ASCII.GetBytes(plaintext));
         }
     }
 }

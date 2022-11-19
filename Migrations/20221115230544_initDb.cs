@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CahutBackend.Migrations
 {
     /// <inheritdoc />
-    public partial class InitDb : Migration
+    public partial class initDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -86,12 +86,6 @@ namespace CahutBackend.Migrations
                         principalColumn: "GroupId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_GroupDetail_Role_RoleId",
-                        column: x => x.RoleId,
-                        principalTable: "Role",
-                        principalColumn: "RoleId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
                         name: "FK_GroupDetail_User_MemberId",
                         column: x => x.MemberId,
                         principalTable: "User",
@@ -129,12 +123,6 @@ namespace CahutBackend.Migrations
                 column: "MemberId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_GroupDetail_RoleId",
-                table: "GroupDetail",
-                column: "RoleId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_User_UserName",
                 table: "User",
                 column: "UserName",
@@ -151,13 +139,13 @@ namespace CahutBackend.Migrations
                 name: "GroupDetail");
 
             migrationBuilder.DropTable(
+                name: "Role");
+
+            migrationBuilder.DropTable(
                 name: "Token");
 
             migrationBuilder.DropTable(
                 name: "Group");
-
-            migrationBuilder.DropTable(
-                name: "Role");
 
             migrationBuilder.DropTable(
                 name: "User");

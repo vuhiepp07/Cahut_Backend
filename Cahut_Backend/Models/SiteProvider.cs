@@ -4,16 +4,42 @@ namespace Cahut_Backend.Models
 {
     public class SiteProvider : BaseProvider
     {
-        UserRepository product;
-        public UserRepository Product
+        UserRepository user;
+        public UserRepository User
         {
             get
             {
-                if (product == null)
+                if (user == null)
                 {
-                    product = new UserRepository(Context);
+                    user = new UserRepository(Context);
                 }
-                return product;
+                return user;
+            }
+        }
+
+        MailSenderRepository email;
+        public MailSenderRepository Email
+        {
+            get
+            {
+                if (email == null)
+                {
+                    email = new MailSenderRepository(Context);
+                }
+                return email;
+            }
+        }
+
+        TokenRepository token;
+        public TokenRepository Token
+        {
+            get
+            {
+                if (token == null)
+                {
+                    token = new TokenRepository(Context);
+                }
+                return token;
             }
         }
     }

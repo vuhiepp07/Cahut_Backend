@@ -4,9 +4,109 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Cahut_Backend.Controllers
 {
-    [Route("api/[controller]")]
+    //[Route("api/[controller]")]
     [ApiController]
     public class AuthController : BaseController
     {
+        private IConfiguration _configuration;
+        public AuthController(IConfiguration configuration) : base()
+        {
+            this._configuration = configuration;
+        }
+
+        private string CreateActiveMailBody(String UserId)
+        {
+            string bodyMsg = "";
+            bodyMsg += "<h2>Chào mừng bạn đến với Cahut, nền tảng học online đa dạng và hiện đại" +
+                ", bạn đã đăng kí tài khoản thành công, vui lòng click vào link sau để kích hoạt tài khoản</h2>";
+            bodyMsg += $"<h3>https://localhost:44326/auth/activate/account/{UserId}</h3>";
+            return bodyMsg;
+        }
+
+        [HttpPost("auth/register")]
+        public ResponeMessage Register(RegisterModel obj)
+        {
+            int ret = provider.User.Register(obj);
+            if(ret > 0)
+            {
+                Guid UserId = provider.User.GetUserId(obj.UserName);
+                string bodyMsg = CreateActiveMailBody(UserId.ToString());
+                EmailMessage msg = new EmailMessage
+                {
+                    EmailTo = obj.Email,
+                    Subject = "Thư mời kích hoạt tài khoản",
+                    Content = bodyMsg
+                };
+                EmailSender sender = provider.Email.GetMailSender();
+                string sendMailResult = Helper.SendEmails(sender, msg, _configuration);
+                if (sendMailResult == "Send mail success")
+                {
+                    provider.Email.increaseMailSent(sender.usr);
+                    return new ResponeMessage
+                    {
+                        status = true,
+                        data = null,
+                        message = "Đăng kí thành công, xin mời kiểm tra mail và làm theo hướng dẫn để kích hoạt tài khoản và sử dụng"
+                    };
+                }
+                return new ResponeMessage
+                {
+                    status = true,
+                    data = null,
+                    message = "Đăng kí thành công, gửi mail thất bại"
+                };
+            }
+            else
+            {
+                return new ResponeMessage
+                {
+                    status = true,
+                    data = null,
+                    message = "Đăng kí thất bại, xin mời thử lại với username khác"
+                };
+            }
+        }
+
+        [HttpGet("auth/activate/account/{UserId}")]
+        public ResponeMessage ActivateAccount(string UserId)
+        {
+            int ret = provider.User.ActivateAccount(Guid.Parse(UserId));
+            if (ret > 0)
+            {
+                return new ResponeMessage
+                {
+                    status = true,
+                    data = null,
+                    message = "Kích hoạt tài khoản thành công, xin mời đăng nhập"
+                };
+            }
+            else
+            {
+                return new ResponeMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Kích hoạt tài khoản thất bại, xin mời thử lại"
+                };
+            }
+        }
+
+        [HttpPost("auth/login")]
+        public ResponeMessage Login(LoginModel obj)
+        {
+            User usr = provider.User.Login(obj);
+            return new ResponeMessage
+            {
+                status = true,
+                data = usr,
+                message = "Đăng nhập thành công"
+            };
+        }
+
+        [HttpGet("auth/logout/account/{UserId}")]
+        public void Logout(string UserId)
+        {
+            provider.Token.ClearUsrToken(Guid.Parse(UserId));
+        }
     }
 }

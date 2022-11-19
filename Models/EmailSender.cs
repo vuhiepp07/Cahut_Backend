@@ -4,6 +4,5 @@
     {
         public string usr { get; set; }
         public string pwd { get; set; }
-        public int EmailSended { get; set; }
     }
 }

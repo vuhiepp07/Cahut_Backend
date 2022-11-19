@@ -11,11 +11,12 @@ namespace Cahut_Backend.Repository
         public DbSet<GroupDetail> GroupDetail { get; set; }
         public DbSet<Token> Token { get; set; }
         public DbSet<EmailSender> EmailSender { get; set; }
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+        {
+        }
         protected override void OnConfiguring(DbContextOptionsBuilder builder)
         {
             base.OnConfiguring(builder);
-            var configuration = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json").Build();
-            builder.UseSqlServer(configuration.GetConnectionString("Cahut"));
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -24,7 +25,6 @@ namespace Cahut_Backend.Repository
             builder.Entity<EmailSender>(entity => {
                 entity.ToTable("EmailSender");
                 entity.HasKey(p => p.usr);
-                entity.Property(p => p.EmailSended).HasDefaultValue(0);
             });
 
             builder.Entity<User>(entity => {
@@ -32,7 +32,6 @@ namespace Cahut_Backend.Repository
                 entity.HasKey(p => p.UserId);
                 entity.HasIndex(p => p.UserName).IsUnique(true);
                 entity.Property(p => p.Avatar).IsRequired(false);
-                entity.Property(p => p.Phone).IsRequired(false);
                 entity.Property(p => p.AccountStatus).HasDefaultValue(0);
             });
 
@@ -60,9 +59,6 @@ namespace Cahut_Backend.Repository
                 entity.HasOne(p => p.User)
                         .WithOne(p => p.GroupDetail)
                         .HasForeignKey<GroupDetail>(p => p.MemberId);
-                entity.HasOne(p => p.Role)
-                        .WithOne(p => p.GroupDetail)
-                        .HasForeignKey<GroupDetail>(p => p.RoleId);
             });
 
             builder.Entity<Token>(entity => {
