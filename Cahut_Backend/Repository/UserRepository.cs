@@ -45,20 +45,44 @@ namespace Cahut_Backend.Repository
             return context.SaveChanges();
         }
 
+        public User GetUserInfo(string email)
+        {
+            return context.User.Select(p => new User
+            {
+                UserName = p.UserName,
+                Email = p.Email,
+                Phone = p.Phone,
+                AccountStatus = p.AccountStatus
+            }).SingleOrDefault(p => p.Email == email);
+        }
+
+        public User GetUserById(string UserId)
+        {
+            User usr = context.User.Find(Guid.Parse(UserId));
+            return usr;
+        }
+
         public User Login(LoginModel obj)
         {
             User user = context.User.SingleOrDefault(p => p.UserName == obj.UserName && p.Password == Helper.Hash(obj.UserName + "^@#%!@(!&^$" + obj.Password));
             return user;
         }
 
-        public int ClearToken(Guid userId)
+        public int UpdateUserTokens(string UserId, string RefreshToken, DateTime expiredTime)
         {
-            User res = context.User.SingleOrDefault(p => p.UserId == userId);
-            if(res != null)
+            User usr = context.User.Find(Guid.Parse(UserId));
+            if(usr != null)
             {
-                res.Token.RefreshToken = String.Empty;
-                res.Token.AccessToken = String.Empty;
-                return context.SaveChanges();
+                usr.RefreshToken = RefreshToken;
+                usr.RefreshTokenExpiredTime = expiredTime;
+                try
+                {
+                    context.SaveChanges();
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
             }
             return 0;
         }

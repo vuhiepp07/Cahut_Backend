@@ -9,8 +9,8 @@
         public string Email { get; set; }
         public string Phone { get; set; }
         public int AccountStatus { get; set; }
-
+        public string RefreshToken { get; set; }
+        public DateTime RefreshTokenExpiredTime { get; set; }
         public GroupDetail GroupDetail { get; set; }
-        public Token Token { get; set; }
     }
 }

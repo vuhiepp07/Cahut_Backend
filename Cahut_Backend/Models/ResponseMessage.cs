@@ -1,6 +1,6 @@
 ﻿namespace Cahut_Backend.Models
 {
-    public class ResponeMessage
+    public class ResponseMessage
     {
         public Boolean status { get; set; }
         public dynamic data { get; set; }

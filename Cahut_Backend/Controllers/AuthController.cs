@@ -1,6 +1,7 @@
 ﻿using Cahut_Backend.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Cahut_Backend.Controllers
 {
@@ -24,7 +25,7 @@ namespace Cahut_Backend.Controllers
         }
 
         [HttpPost("auth/register")]
-        public ResponeMessage Register(RegisterModel obj)
+        public ResponseMessage Register(RegisterModel obj)
         {
             int ret = provider.User.Register(obj);
             if(ret > 0)
@@ -42,14 +43,14 @@ namespace Cahut_Backend.Controllers
                 if (sendMailResult == "Send mail success")
                 {
                     provider.Email.increaseMailSent(sender.usr);
-                    return new ResponeMessage
+                    return new ResponseMessage
                     {
                         status = true,
                         data = null,
                         message = "Đăng kí thành công, xin mời kiểm tra mail và làm theo hướng dẫn để kích hoạt tài khoản và sử dụng"
                     };
                 }
-                return new ResponeMessage
+                return new ResponseMessage
                 {
                     status = true,
                     data = null,
@@ -58,7 +59,7 @@ namespace Cahut_Backend.Controllers
             }
             else
             {
-                return new ResponeMessage
+                return new ResponseMessage
                 {
                     status = true,
                     data = null,
@@ -68,12 +69,12 @@ namespace Cahut_Backend.Controllers
         }
 
         [HttpGet("auth/activate/account/{UserId}")]
-        public ResponeMessage ActivateAccount(string UserId)
+        public ResponseMessage ActivateAccount(string UserId)
         {
             int ret = provider.User.ActivateAccount(Guid.Parse(UserId));
             if (ret > 0)
             {
-                return new ResponeMessage
+                return new ResponseMessage
                 {
                     status = true,
                     data = null,
@@ -82,25 +83,52 @@ namespace Cahut_Backend.Controllers
             }
             else
             {
-                return new ResponeMessage
+                return new ResponseMessage
                 {
                     status = false,
-                    data = null,
+                    data = null,    
                     message = "Kích hoạt tài khoản thất bại, xin mời thử lại"
                 };
             }
         }
 
         [HttpPost("auth/login")]
-        public ResponeMessage Login(LoginModel obj)
+        public ResponseMessage Login(LoginModel obj)
         {
             User usr = provider.User.Login(obj);
-            return new ResponeMessage
+            if(usr != null)
             {
-                status = true,
-                data = usr,
-                message = "Đăng nhập thành công"
-            };
+                ClaimsIdentity claims = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim(ClaimTypes.Name, usr.UserName),
+                    new Claim(ClaimTypes.Email, usr.Email),
+                    new Claim(ClaimTypes.NameIdentifier, usr.UserId.ToString()),
+                });
+                Token token = new Token
+                {
+                    AccessToken = TokenServices.CreateToken(claims),
+                    RefreshToken = TokenServices.CreateRefreshToken()
+                };
+                int saveToDbResult = provider.User.UpdateUserTokens(usr.UserId.ToString(), token.RefreshToken, DateTime.UtcNow.AddDays(7));
+                return new ResponseMessage
+                {
+                    status = true,
+                    data = token,
+                    message = "Đăng nhập thành công"
+                };
+            }
+            else
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Đăng nhập thất bại"
+                };
+            }
+
+
+
         }
 
         [HttpGet("auth/logout/account/{UserId}")]

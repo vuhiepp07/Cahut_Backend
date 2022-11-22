@@ -9,7 +9,6 @@ namespace Cahut_Backend.Repository
         public DbSet<Role> Role { get; set; }
         public DbSet<Group> Group { get; set; }
         public DbSet<GroupDetail> GroupDetail { get; set; }
-        public DbSet<Token> Token { get; set; }
         public DbSet<EmailSender> EmailSender { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder builder)
         {
@@ -33,6 +32,8 @@ namespace Cahut_Backend.Repository
                 entity.HasIndex(p => p.UserName).IsUnique(true);
                 entity.Property(p => p.Avatar).IsRequired(false);
                 entity.Property(p => p.Phone).IsRequired(false);
+                entity.Property(p => p.RefreshToken).IsRequired(false);
+                entity.Property(p => p.RefreshTokenExpiredTime).HasDefaultValue(DateTime.UtcNow);
                 entity.Property(p => p.AccountStatus).HasDefaultValue(0);
             });
 
@@ -63,16 +64,6 @@ namespace Cahut_Backend.Repository
                 entity.HasOne(p => p.Role)
                         .WithOne(p => p.GroupDetail)
                         .HasForeignKey<GroupDetail>(p => p.RoleId);
-            });
-
-            builder.Entity<Token>(entity => {
-                entity.ToTable("Token");
-                entity.HasKey(p => p.UserId);
-                entity.Property(p => p.AccessToken).IsRequired(false);
-                entity.Property(p => p.RefreshToken).IsRequired(false);
-                entity.HasOne(p => p.User)
-                        .WithOne(p => p.Token)
-                        .HasForeignKey<Token>(p => p.UserId);
             });
         }
     }

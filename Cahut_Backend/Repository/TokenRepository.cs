@@ -15,10 +15,20 @@ namespace Cahut_Backend.Repository
             User usr = context.User.Where<User>(p => p.UserId == UserId).SingleOrDefault();
             if(usr != null)
             {
-                usr.Token.RefreshToken = String.Empty;
-                usr.Token.AccessToken = String.Empty;
+                usr.RefreshToken = String.Empty;
+                usr.RefreshTokenExpiredTime = DateTime.UtcNow;
             }
             return context.SaveChanges();
+        }
+
+        public bool ValidateRefreshToken(Guid UserId, string RefreshToken)
+        {
+            User usr = context.User.Where(p => p.UserId == UserId).SingleOrDefault();
+            if(usr.RefreshToken == RefreshToken)
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

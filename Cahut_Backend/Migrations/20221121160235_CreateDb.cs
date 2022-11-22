@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CahutBackend.Migrations
 {
     /// <inheritdoc />
-    public partial class InitDb : Migration
+    public partial class CreateDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -61,7 +61,9 @@ namespace CahutBackend.Migrations
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    AccountStatus = table.Column<int>(type: "int", nullable: false, defaultValue: 0)
+                    AccountStatus = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RefreshTokenExpiredTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2022, 11, 21, 16, 2, 35, 880, DateTimeKind.Utc).AddTicks(7255))
                 },
                 constraints: table =>
                 {
@@ -100,25 +102,6 @@ namespace CahutBackend.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "Token",
-                columns: table => new
-                {
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    AccessToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Token", x => x.UserId);
-                    table.ForeignKey(
-                        name: "FK_Token_User_UserId",
-                        column: x => x.UserId,
-                        principalTable: "User",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_GroupDetail_GroupId",
                 table: "GroupDetail",
@@ -150,9 +133,6 @@ namespace CahutBackend.Migrations
 
             migrationBuilder.DropTable(
                 name: "GroupDetail");
-
-            migrationBuilder.DropTable(
-                name: "Token");
 
             migrationBuilder.DropTable(
                 name: "Group");

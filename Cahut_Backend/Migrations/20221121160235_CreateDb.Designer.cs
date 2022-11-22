@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CahutBackend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20221119041628_InitDb")]
-    partial class InitDb
+    [Migration("20221121160235_CreateDb")]
+    partial class CreateDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -109,22 +109,6 @@ namespace CahutBackend.Migrations
                     b.ToTable("Role", (string)null);
                 });
 
-            modelBuilder.Entity("Cahut_Backend.Models.Token", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("AccessToken")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RefreshToken")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("UserId");
-
-                    b.ToTable("Token", (string)null);
-                });
-
             modelBuilder.Entity("Cahut_Backend.Models.User", b =>
                 {
                     b.Property<Guid>("UserId")
@@ -149,6 +133,14 @@ namespace CahutBackend.Migrations
 
                     b.Property<string>("Phone")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("RefreshTokenExpiredTime")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValue(new DateTime(2022, 11, 21, 16, 2, 35, 880, DateTimeKind.Utc).AddTicks(7255));
 
                     b.Property<string>("UserName")
                         .IsRequired()
@@ -189,17 +181,6 @@ namespace CahutBackend.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Cahut_Backend.Models.Token", b =>
-                {
-                    b.HasOne("Cahut_Backend.Models.User", "User")
-                        .WithOne("Token")
-                        .HasForeignKey("Cahut_Backend.Models.Token", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Cahut_Backend.Models.Group", b =>
                 {
                     b.Navigation("GroupDetail")
@@ -215,9 +196,6 @@ namespace CahutBackend.Migrations
             modelBuilder.Entity("Cahut_Backend.Models.User", b =>
                 {
                     b.Navigation("GroupDetail")
-                        .IsRequired();
-
-                    b.Navigation("Token")
                         .IsRequired();
                 });
 #pragma warning restore 612, 618
