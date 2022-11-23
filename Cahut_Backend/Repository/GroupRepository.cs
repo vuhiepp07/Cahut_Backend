@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using Cahut_Backend.Models;
+using System.Data;
 
 namespace Cahut_Backend.Repository
 {

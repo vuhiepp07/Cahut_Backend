@@ -10,7 +10,7 @@ namespace Cahut_Backend.Repository
 
         }
 
-        public Guid GetUserId(string UserName)
+        public Guid GetUserIdByUserName(string UserName)
         {
             var res = context.User.Where(p => p.UserName == UserName)
                                 .Select(p => p.UserId)
@@ -45,9 +45,9 @@ namespace Cahut_Backend.Repository
             return context.SaveChanges();
         }
 
-        public User GetUserInfo(string email)
+        public object GetUserInfo(string email)
         {
-            return context.User.Select(p => new User
+            return context.User.Select(p => new
             {
                 UserName = p.UserName,
                 Email = p.Email,
@@ -64,13 +64,23 @@ namespace Cahut_Backend.Repository
 
         public User Login(LoginModel obj)
         {
-            User user = context.User.SingleOrDefault(p => p.UserName == obj.UserName && p.Password == Helper.Hash(obj.UserName + "^@#%!@(!&^$" + obj.Password));
-            return user;
+            var usr = from user in context.User
+                      where user.UserName == obj.UserName && user.Password == Helper.Hash(obj.UserName + "^@#%!@(!&^$" + obj.Password)
+                      select new User
+                      {
+                          UserId = user.UserId,
+                          Avatar = user.Avatar,
+                          UserName = user.UserName,
+                          Email = user.Email,
+                          Phone = user.Phone,
+                          AccountStatus = user.AccountStatus
+                      };
+            return usr.SingleOrDefault();
         }
 
         public int UpdateUserTokens(string UserId, string RefreshToken, DateTime expiredTime)
         {
-            User usr = context.User.Find(Guid.Parse(UserId));
+            User usr = GetUserById(UserId);
             if(usr != null)
             {
                 usr.RefreshToken = RefreshToken;

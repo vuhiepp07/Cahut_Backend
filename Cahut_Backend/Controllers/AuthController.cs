@@ -30,7 +30,7 @@ namespace Cahut_Backend.Controllers
             int ret = provider.User.Register(obj);
             if(ret > 0)
             {
-                Guid UserId = provider.User.GetUserId(obj.UserName);
+                Guid UserId = provider.User.GetUserIdByUserName(obj.UserName);
                 string bodyMsg = CreateActiveMailBody(UserId.ToString());
                 EmailMessage msg = new EmailMessage
                 {
