@@ -42,5 +42,18 @@ namespace Cahut_Backend.Models
                 return token;
             }
         }
+
+        GroupRepository group;
+        public GroupRepository Group
+        {
+            get
+            {
+                if (group == null)
+                {
+                    group = new GroupRepository(Context);
+                }
+                return group;
+            }
+        }
     }
 }

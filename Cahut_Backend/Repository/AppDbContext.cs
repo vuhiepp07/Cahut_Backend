@@ -46,7 +46,9 @@ namespace Cahut_Backend.Repository
             builder.Entity<Group>(entity => {
                 entity.ToTable("Group");
                 entity.HasKey(p => p.GroupId);
-                entity.Property(p => p.JoinGrLink).IsRequired(false);
+                entity.Property(p => p.JoinGrString).IsRequired(false);
+                entity.Property(p => p.GroupName).IsRequired(true);
+                entity.HasIndex(p => p.GroupName).IsUnique(true);
             });
 
             builder.Entity<GroupDetail>(entity => {
@@ -54,6 +56,7 @@ namespace Cahut_Backend.Repository
                 entity.HasKey(p => new { p.GroupId, p.MemberId });
                 entity.HasIndex(p => p.GroupId).IsUnique(false);
                 entity.HasIndex(p => p.MemberId).IsUnique(false);
+                entity.HasIndex(p => p.RoleId).IsUnique(false);
                 entity.Property(p => p.RoleId).HasDefaultValue(1);
                 entity.HasOne(p => p.Group)
                         .WithOne(p => p.GroupDetail)

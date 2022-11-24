@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CahutBackend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20221121160235_CreateDb")]
-    partial class CreateDb
+    [Migration("20221124164125_InitDb")]
+    partial class InitDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -53,13 +53,20 @@ namespace CahutBackend.Migrations
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("JoinGrLink")
+                    b.Property<string>("GroupName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("JoinGrString")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("OwnerId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("GroupId");
+
+                    b.HasIndex("GroupName")
+                        .IsUnique();
 
                     b.ToTable("Group", (string)null);
                 });
@@ -86,8 +93,7 @@ namespace CahutBackend.Migrations
 
                     b.HasIndex("MemberId");
 
-                    b.HasIndex("RoleId")
-                        .IsUnique();
+                    b.HasIndex("RoleId");
 
                     b.ToTable("GroupDetail", (string)null);
                 });
@@ -140,7 +146,7 @@ namespace CahutBackend.Migrations
                     b.Property<DateTime>("RefreshTokenExpiredTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2022, 11, 21, 16, 2, 35, 880, DateTimeKind.Utc).AddTicks(7255));
+                        .HasDefaultValue(new DateTime(2022, 11, 24, 16, 41, 25, 679, DateTimeKind.Utc).AddTicks(2691));
 
                     b.Property<string>("UserName")
                         .IsRequired()

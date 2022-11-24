@@ -126,9 +126,6 @@ namespace Cahut_Backend.Controllers
                     message = "Đăng nhập thất bại"
                 };
             }
-
-
-
         }
 
         [HttpGet("auth/logout/account/{UserId}")]

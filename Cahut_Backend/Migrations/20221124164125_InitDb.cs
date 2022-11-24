@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CahutBackend.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateDb : Migration
+    public partial class InitDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -31,7 +31,8 @@ namespace CahutBackend.Migrations
                     GroupId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     OwnerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    JoinGrLink = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    JoinGrString = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    GroupName = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -63,7 +64,7 @@ namespace CahutBackend.Migrations
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     AccountStatus = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    RefreshTokenExpiredTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2022, 11, 21, 16, 2, 35, 880, DateTimeKind.Utc).AddTicks(7255))
+                    RefreshTokenExpiredTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2022, 11, 24, 16, 41, 25, 679, DateTimeKind.Utc).AddTicks(2691))
                 },
                 constraints: table =>
                 {
@@ -103,6 +104,12 @@ namespace CahutBackend.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_Group_GroupName",
+                table: "Group",
+                column: "GroupName",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_GroupDetail_GroupId",
                 table: "GroupDetail",
                 column: "GroupId");
@@ -115,8 +122,7 @@ namespace CahutBackend.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_GroupDetail_RoleId",
                 table: "GroupDetail",
-                column: "RoleId",
-                unique: true);
+                column: "RoleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_User_UserName",
