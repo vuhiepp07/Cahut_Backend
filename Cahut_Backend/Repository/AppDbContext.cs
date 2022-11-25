@@ -49,6 +49,7 @@ namespace Cahut_Backend.Repository
                 entity.Property(p => p.JoinGrString).IsRequired(false);
                 entity.Property(p => p.GroupName).IsRequired(true);
                 entity.HasIndex(p => p.GroupName).IsUnique(true);
+                entity.Property(p => p.NumOfMems).HasDefaultValue(1);
             });
 
             builder.Entity<GroupDetail>(entity => {

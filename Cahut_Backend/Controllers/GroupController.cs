@@ -35,11 +35,16 @@ namespace Cahut_Backend.Controllers
             if (gr != null)
             {
                 int addResult = provider.Group.AddMember(gr.GroupId, UserId);
+                int updateResult = 0;
+                if(addResult > 0)
+                {
+                    updateResult = provider.Group.HandleGroupNumOfMembers(gr.GroupId, "add");
+                }
                 return new ResponseMessage
                 {
-                    status = addResult > 0?true:false,
+                    status = updateResult > 0?true:false,
                     data = null,
-                    message = addResult > 0 ? "Join group successfully" : "Join group failed"
+                    message = updateResult > 0 ? "Join group successfully" : "Join group failed"
                 };
             }
             return new ResponseMessage
@@ -96,7 +101,7 @@ namespace Cahut_Backend.Controllers
                 return new ResponseMessage
                 {
                     status = true,
-                    data = gr.JoinGrString,
+                    data = $"https://localhost:44326/group/join/{gr.JoinGrString}",
                     message = "Get group invite link success"
                 };
             }
@@ -115,9 +120,9 @@ namespace Cahut_Backend.Controllers
             int result = provider.Group.SetMemberRole(usrId, grName, roleName);
             return new ResponseMessage
             {
-                status = result.Equals("Set Co-owner success") ? true : false,
+                status = result > 0 ? true : false,
                 data = null,
-                message = result > 0 ? "Set Co-owner success" : "Failed to set Co-owner"
+                message = result > 0 ? "Set role success" : "Failed to set role"
             };
         }
 
@@ -126,12 +131,17 @@ namespace Cahut_Backend.Controllers
         {
             Group gr = provider.Group.GetGroupByName(grName);
             Guid userId = provider.User.GetUserIdByUserName(userName);
-            int result = provider.Group.DeleteMember(gr.GroupId, userId);
+            int deleteResult = provider.Group.DeleteMember(gr.GroupId, userId);
+            int updateResult = 0;
+            if(deleteResult > 0)
+            {
+                updateResult = provider.Group.HandleGroupNumOfMembers(gr.GroupId, "delete");
+            }
             return new ResponseMessage
             {
-                status = result > 0 ? true : false,
+                status = updateResult > 0 ? true : false,
                 data = null,
-                message = result > 0 ? "Kick member success" : "Failed to kick member"
+                message = updateResult > 0 ? "Kick member success" : "Failed to kick member"
             };
         }
 
@@ -156,8 +166,31 @@ namespace Cahut_Backend.Controllers
             };
         }
 
+        [HttpGet("group/get/joined"), Authorize]
+        public ResponseMessage GetJoinedGroup()
+        {
+            Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var res = provider.Group.GetJoinedGroup(userId);
+            return new ResponseMessage
+            {
+                status = res is not null ? true : false,
+                data = res,
+                message = res is not null ? "Get joined group successfully" : "You have not joined any group yet"
+            };
+        }
 
-
+        [HttpGet("group/get/managed"), Authorize]
+        public ResponseMessage GetManagedGroup()
+        {
+            Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var res = provider.Group.GetManagedGroup(userId);
+            return new ResponseMessage
+            {
+                status = res is not null ? true : false,
+                data = res,
+                message = res is not null ? "Get managed group successfully" : "You have not joined any group yet"
+            };
+        }
     }
 }
 

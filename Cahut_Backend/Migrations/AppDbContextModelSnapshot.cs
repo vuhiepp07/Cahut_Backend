@@ -57,6 +57,11 @@ namespace CahutBackend.Migrations
                     b.Property<string>("JoinGrString")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("NumOfMems")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1);
+
                     b.Property<Guid>("OwnerId")
                         .HasColumnType("uniqueidentifier");
 
@@ -143,7 +148,7 @@ namespace CahutBackend.Migrations
                     b.Property<DateTime>("RefreshTokenExpiredTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2022, 11, 24, 16, 41, 25, 679, DateTimeKind.Utc).AddTicks(2691));
+                        .HasDefaultValue(new DateTime(2022, 11, 25, 3, 6, 50, 391, DateTimeKind.Utc).AddTicks(5715));
 
                     b.Property<string>("UserName")
                         .IsRequired()

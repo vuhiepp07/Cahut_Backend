@@ -27,6 +27,20 @@ namespace Cahut_Backend.Repository
             return context.SaveChanges();
         }
 
+        public int HandleGroupNumOfMembers(Guid GroupId, string type)
+        {
+            Group gr = GetGroupById(GroupId);
+            if(type == "delete")
+            {
+                gr.NumOfMems = gr.NumOfMems - 1;
+            }
+            else
+            {
+                gr.NumOfMems = gr.NumOfMems + 1;
+            }
+            return context.SaveChanges();
+        }
+
         public int CreateGroup(Guid UserId, string grName)
         {
             Guid grId = Guid.NewGuid();
@@ -119,8 +133,39 @@ namespace Cahut_Backend.Repository
                       select new
                       {
                           MemberName = usr.UserName,
+                          Email = usr.Email,    
                           Role = detail.RoleId == 1 ? "Owner" : detail.RoleId == 2 ? "Co-owner" : "Member",
                           JoinedDate = detail.JoinedDate,
+                      };
+            return res;
+        }
+
+        public object GetJoinedGroup(Guid userId)
+        {
+             var res = from detail in context.GroupDetail
+                      join gr in context.Group
+                      on detail.GroupId equals gr.GroupId
+                      where detail.MemberId == userId
+                      select new
+                      {
+                          GroupName = gr.GroupName,
+                          JoinedDate = detail.JoinedDate,
+                          NumOfMems = gr.NumOfMems,
+                          Role = detail.RoleId == 1 ? "Owner" : detail.RoleId == 2 ? "Co-owner" : "Member",
+                      };
+            return res;
+        }
+
+        public object GetManagedGroup(Guid userId)
+        {
+            var res = from gr in context.Group
+                      where gr.OwnerId == userId
+                      select new
+                      {
+                          groupName = gr.GroupName,
+                          numOfMems = gr.NumOfMems,
+                          dateCreated = gr.DateCreated,
+                          inviteLink = $"https://localhost:44326/group/join/{gr.JoinGrString}"
                       };
             return res;
         }

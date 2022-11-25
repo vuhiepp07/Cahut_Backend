@@ -31,6 +31,7 @@ namespace CahutBackend.Migrations
                     GroupId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     OwnerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    NumOfMems = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
                     JoinGrString = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     GroupName = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
@@ -64,7 +65,7 @@ namespace CahutBackend.Migrations
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     AccountStatus = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    RefreshTokenExpiredTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2022, 11, 24, 16, 41, 25, 679, DateTimeKind.Utc).AddTicks(2691))
+                    RefreshTokenExpiredTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2022, 11, 25, 3, 6, 50, 391, DateTimeKind.Utc).AddTicks(5715))
                 },
                 constraints: table =>
                 {
