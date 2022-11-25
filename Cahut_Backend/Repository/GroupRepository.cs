@@ -77,5 +77,52 @@ namespace Cahut_Backend.Repository
             return rand;
         }
 
+        public int SetMemberRole(Guid UserId, string grName, string roleName)
+        {
+            Group gr = GetGroupByName(grName);
+            if (gr == null)
+            {
+                return -1;
+            }
+            else
+            {
+                var detail = from grp in context.Group
+                             join grdetail in context.GroupDetail
+                             on grp.GroupId equals grdetail.GroupId
+                             where grp.GroupName == grName && grdetail.MemberId == UserId
+                             select grdetail;
+                int roleId = (from role in context.Role
+                             where role.RoleName.ToLower().Equals(roleName.ToLower())
+                             select role.RoleId).FirstOrDefault<int>();
+                detail.SingleOrDefault<GroupDetail>().RoleId = roleId;
+                return context.SaveChanges();
+            }
+        }
+
+        public int DeleteMember(Guid groupId, Guid MemberId)
+        {
+            GroupDetail memberInGroup = context.GroupDetail.Where(p => p.GroupId == groupId && p.MemberId == MemberId).FirstOrDefault();
+            if(memberInGroup != null)
+            {
+                context.GroupDetail.Remove(memberInGroup);
+                return context.SaveChanges();
+            }
+            return 0;
+        }
+
+        public object getAllGrMembers(Guid GroupId)
+        {
+            var res = from detail in context.GroupDetail
+                      join usr in context.User
+                      on detail.MemberId equals usr.UserId
+                      where detail.GroupId == GroupId
+                      select new
+                      {
+                          MemberName = usr.UserName,
+                          Role = detail.RoleId == 1 ? "Owner" : detail.RoleId == 2 ? "Co-owner" : "Member",
+                          JoinedDate = detail.JoinedDate,
+                      };
+            return res;
+        }
     }
 }

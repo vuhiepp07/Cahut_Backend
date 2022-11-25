@@ -108,7 +108,55 @@ namespace Cahut_Backend.Controllers
             };
         }
 
-       
+        [HttpPost("group/set/role/{grName}/{userName}/{roleName}")]
+        public ResponseMessage SetMemberRole(string grName, string userName, string roleName)
+        {
+            Guid usrId = provider.User.GetUserIdByUserName(userName);
+            int result = provider.Group.SetMemberRole(usrId, grName, roleName);
+            return new ResponseMessage
+            {
+                status = result.Equals("Set Co-owner success") ? true : false,
+                data = null,
+                message = result > 0 ? "Set Co-owner success" : "Failed to set Co-owner"
+            };
+        }
+
+        [HttpPost("group/manage/kick/{grName}/{userName}")]
+        public ResponseMessage KickMember(string grName, string userName)
+        {
+            Group gr = provider.Group.GetGroupByName(grName);
+            Guid userId = provider.User.GetUserIdByUserName(userName);
+            int result = provider.Group.DeleteMember(gr.GroupId, userId);
+            return new ResponseMessage
+            {
+                status = result > 0 ? true : false,
+                data = null,
+                message = result > 0 ? "Kick member success" : "Failed to kick member"
+            };
+        }
+
+        [HttpGet("group/getall/groupmembers/{grName}"), Authorize]
+        public ResponseMessage GetAllGroupMembers(string grName)
+        {
+            Group group = provider.Group.GetGroupByName(grName);
+            if (group is not null)
+            {
+                return new ResponseMessage
+                {
+                    status = true,
+                    data = provider.Group.getAllGrMembers(group.GroupId),
+                    message = "Get all group members success"
+                };
+            }
+            return new ResponseMessage
+            {
+                status = false,
+                data = null,
+                message = "Group is not exsist"
+            };
+        }
+
+
 
     }
 }
