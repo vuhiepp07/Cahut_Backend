@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CahutBackend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20221125030650_InitDb")]
+    [Migration("20221125152949_InitDb")]
     partial class InitDb
     {
         /// <inheritdoc />
@@ -138,9 +138,9 @@ namespace CahutBackend.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Password")
+                    b.Property<byte[]>("Password")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<string>("Phone")
                         .HasColumnType("nvarchar(max)");
@@ -151,7 +151,7 @@ namespace CahutBackend.Migrations
                     b.Property<DateTime>("RefreshTokenExpiredTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2022, 11, 25, 3, 6, 50, 391, DateTimeKind.Utc).AddTicks(5715));
+                        .HasDefaultValue(new DateTime(2022, 11, 25, 15, 29, 49, 473, DateTimeKind.Utc).AddTicks(4269));
 
                     b.Property<string>("UserName")
                         .IsRequired()

@@ -13,10 +13,10 @@ namespace Cahut_Backend.Controllers
         [Route("token/refresh")]
         public ResponseMessage Refresh(Token tokens)
         {
-            string UserId = TokenServices.GetUserIdFromExpiredToken(tokens.AccessToken);
+            Guid UserId = Guid.Parse(TokenServices.GetUserIdFromExpiredToken(tokens.AccessToken));
             if(UserId != null)
             {
-                if(provider.Token.ValidateRefreshToken(Guid.Parse(UserId), tokens.RefreshToken) == true)
+                if(provider.Token.ValidateRefreshToken(UserId, tokens.RefreshToken) == true)
                 {
                     User usr = provider.User.GetUserById(UserId);
                     ClaimsIdentity claims = new ClaimsIdentity(new Claim[]

@@ -56,16 +56,16 @@ namespace Cahut_Backend.Repository
             }).SingleOrDefault(p => p.Email == email);
         }
 
-        public User GetUserById(string UserId)
+        public User GetUserById(Guid UserId)
         {
-            User usr = context.User.Find(Guid.Parse(UserId));
+            User usr = context.User.Find(UserId);
             return usr;
         }
 
         public User Login(LoginModel obj)
-        {
+        {   
             var usr = from user in context.User
-                      where user.UserName == obj.UserName && user.Password == Helper.Hash(obj.UserName + "^@#%!@(!&^$" + obj.Password)
+                      where user.UserName == obj.UserName && (user.Password.SequenceEqual(Helper.Hash(obj.UserName + "^@#%!@(!&^$" + obj.Password)))
                       select new User
                       {
                           UserId = user.UserId,
@@ -78,7 +78,7 @@ namespace Cahut_Backend.Repository
             return usr.SingleOrDefault();
         }
 
-        public int UpdateUserTokens(string UserId, string RefreshToken, DateTime expiredTime)
+        public int UpdateUserTokens(Guid UserId, string RefreshToken, DateTime expiredTime)
         {
             User usr = GetUserById(UserId);
             if(usr != null)
@@ -95,6 +95,22 @@ namespace Cahut_Backend.Repository
                 }
             }
             return 0;
+        }
+
+        public bool ValidatePassword(Guid userId, string password)
+        {
+            User usr = context.User.Find(userId);
+            if(usr.Password.SequenceEqual(Helper.Hash(usr.UserName + "^@#%!@(!&^$" + password)))
+            {
+                return true;
+            }
+            return false;
+        }
+        public int ChangePassword(Guid userId, string newPassword)
+        {
+            User usr = context.User.Find(userId);
+            usr.Password = Helper.Hash(usr.UserName + "^@#%!@(!&^$" + newPassword);
+            return context.SaveChanges();
         }
     }
 }

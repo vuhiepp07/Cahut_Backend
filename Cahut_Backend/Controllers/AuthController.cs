@@ -1,4 +1,5 @@
 ﻿using Cahut_Backend.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -109,7 +110,7 @@ namespace Cahut_Backend.Controllers
                     AccessToken = TokenServices.CreateToken(claims),
                     RefreshToken = TokenServices.CreateRefreshToken()
                 };
-                int saveToDbResult = provider.User.UpdateUserTokens(usr.UserId.ToString(), token.RefreshToken, DateTime.UtcNow.AddDays(7));
+                int saveToDbResult = provider.User.UpdateUserTokens(usr.UserId, token.RefreshToken, DateTime.UtcNow.AddDays(7));
                 return new ResponseMessage
                 {
                     status = true,
@@ -128,10 +129,34 @@ namespace Cahut_Backend.Controllers
             }
         }
 
-        [HttpGet("auth/logout/account/{UserId}")]
-        public void Logout(string UserId)
+        [HttpPost("auth/changepassword"), Authorize]
+        public ResponseMessage ChangePassword(ChangePasswordModel obj)
         {
-            provider.Token.ClearUsrToken(Guid.Parse(UserId));
+            Guid UserId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            bool validatePassword = provider.User.ValidatePassword(UserId, obj.CurrentPassword);
+            if(validatePassword == true)
+            {
+                int result = provider.User.ChangePassword(UserId, obj.NewPassword);
+                return new ResponseMessage
+                {
+                    status = result > 0 ? true : false,
+                    data = null,
+                    message = result > 0 ? "Change user password success" : "Change user password failed"
+                };
+            }
+            return new ResponseMessage
+            {
+                status = false,
+                data = null,
+                message = "Change password failed"
+            };
+        }
+
+        [HttpGet("auth/logout"), Authorize]
+        public void Logout()
+        {
+            Guid UserId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            provider.Token.ClearUsrToken(UserId);
         }
     }
 }

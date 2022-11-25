@@ -48,10 +48,10 @@ namespace Cahut_Backend
             }
         }
 
-        public static string Hash(string plaintext)
+        public static byte[] Hash(string plaintext)
         {
             HashAlgorithm algorithm = HashAlgorithm.Create("SHA-512");
-            return algorithm.ComputeHash(Encoding.ASCII.GetBytes(plaintext)).ToString();
+            return algorithm.ComputeHash(Encoding.ASCII.GetBytes(plaintext));
         }
     }
 }
