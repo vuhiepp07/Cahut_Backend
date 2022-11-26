@@ -133,7 +133,7 @@ namespace CahutBackend.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<byte[]>("Password")
                         .IsRequired()
@@ -148,15 +148,15 @@ namespace CahutBackend.Migrations
                     b.Property<DateTime>("RefreshTokenExpiredTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2022, 11, 25, 15, 29, 49, 473, DateTimeKind.Utc).AddTicks(4269));
+                        .HasDefaultValue(new DateTime(2022, 11, 25, 17, 8, 49, 225, DateTimeKind.Utc).AddTicks(3015));
 
                     b.Property<string>("UserName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("UserId");
 
-                    b.HasIndex("UserName")
+                    b.HasIndex("Email")
                         .IsUnique();
 
                     b.ToTable("User", (string)null);

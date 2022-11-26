@@ -2,6 +2,6 @@
 {
     public class RegisterModel: LoginModel
     {
-        public string Email { get; set; }   
+        public string UserName { get; set; }   
     }
 }

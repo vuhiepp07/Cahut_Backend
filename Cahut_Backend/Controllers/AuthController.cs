@@ -28,45 +28,55 @@ namespace Cahut_Backend.Controllers
         [HttpPost("auth/register")]
         public ResponseMessage Register(RegisterModel obj)
         {
-            int ret = provider.User.Register(obj);
-            if(ret > 0)
+            if(provider.User.checkEmailExisted(obj.Email) == false)
             {
-                Guid UserId = provider.User.GetUserIdByUserName(obj.UserName);
-                string bodyMsg = CreateActiveMailBody(UserId.ToString());
-                EmailMessage msg = new EmailMessage
+                int ret = provider.User.Register(obj);
+                if (ret > 0)
                 {
-                    EmailTo = obj.Email,
-                    Subject = "Thư mời kích hoạt tài khoản",
-                    Content = bodyMsg
-                };
-                EmailSender sender = provider.Email.GetMailSender();
-                string sendMailResult = Helper.SendEmails(sender, msg, _configuration);
-                if (sendMailResult == "Send mail success")
-                {
-                    provider.Email.increaseMailSent(sender.usr);
+                    Guid UserId = provider.User.GetUserIdByUserEmail(obj.Email);
+                    string bodyMsg = CreateActiveMailBody(UserId.ToString());
+                    EmailMessage msg = new EmailMessage
+                    {
+                        EmailTo = obj.Email,
+                        Subject = "Thư mời kích hoạt tài khoản",
+                        Content = bodyMsg
+                    };
+                    EmailSender sender = provider.Email.GetMailSender();
+                    string sendMailResult = Helper.SendEmails(sender, msg, _configuration);
+                    if (sendMailResult == "Send mail success")
+                    {
+                        provider.Email.increaseMailSent(sender.usr);
+                        return new ResponseMessage
+                        {
+                            status = true,
+                            data = null,
+                            message = "Đăng kí thành công, xin mời kiểm tra mail và làm theo hướng dẫn để kích hoạt tài khoản và sử dụng"
+                        };
+                    }
                     return new ResponseMessage
                     {
                         status = true,
                         data = null,
-                        message = "Đăng kí thành công, xin mời kiểm tra mail và làm theo hướng dẫn để kích hoạt tài khoản và sử dụng"
+                        message = "Đăng kí thành công, gửi mail thất bại"
                     };
                 }
-                return new ResponseMessage
+                else
                 {
-                    status = true,
-                    data = null,
-                    message = "Đăng kí thành công, gửi mail thất bại"
-                };
+                    return new ResponseMessage
+                    {
+                        status = true,
+                        data = null,
+                        message = "Đăng kí thất bại, xin mời thử lại với username khác"
+                    };
+                }
             }
-            else
+            return new ResponseMessage
             {
-                return new ResponseMessage
-                {
-                    status = true,
-                    data = null,
-                    message = "Đăng kí thất bại, xin mời thử lại với username khác"
-                };
-            }
+                status = false,
+                data = null,
+                message = "Failed to register, email already existed"
+            };
+            
         }
 
         [HttpGet("auth/activate/account/{UserId}")]

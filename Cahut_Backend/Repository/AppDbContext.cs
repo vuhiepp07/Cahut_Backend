@@ -29,7 +29,7 @@ namespace Cahut_Backend.Repository
             builder.Entity<User>(entity => {
                 entity.ToTable("User");
                 entity.HasKey(p => p.UserId);
-                entity.HasIndex(p => p.UserName).IsUnique(true);
+                entity.HasIndex(p => p.Email).IsUnique(true);
                 entity.Property(p => p.Avatar).IsRequired(false);
                 entity.Property(p => p.Phone).IsRequired(false);
                 entity.Property(p => p.RefreshToken).IsRequired(false);

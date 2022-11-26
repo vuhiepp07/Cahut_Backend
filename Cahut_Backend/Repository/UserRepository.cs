@@ -22,13 +22,25 @@ namespace Cahut_Backend.Repository
             return res;
         }
 
+        public Guid GetUserIdByUserEmail(string email)
+        {
+            var res = context.User.Where(p => p.Email == email)
+                                .Select(p => p.UserId)
+                                .FirstOrDefault();
+            if (res == null)
+            {
+                return Guid.Empty;
+            }
+            return res;
+        }
+
         public int Register(RegisterModel obj)
         {
             User temp = new User
             {
                 UserName = obj.UserName,
                 Email = obj.Email,
-                Password = Helper.Hash(obj.UserName + "^@#%!@(!&^$" + obj.Password)
+                Password = Helper.Hash(obj.Email + "^@#%!@(!&^$" + obj.Password)
             };
             context.User.Add(temp);
             return context.SaveChanges();
@@ -45,15 +57,20 @@ namespace Cahut_Backend.Repository
             return context.SaveChanges();
         }
 
-        public object GetUserInfo(string email)
+        public object GetUserInfo(Guid userId)
         {
-            return context.User.Select(p => new
+            User usr = context.User.Find(userId);
+            if(usr != null)
             {
-                UserName = p.UserName,
-                Email = p.Email,
-                Phone = p.Phone,
-                AccountStatus = p.AccountStatus
-            }).SingleOrDefault(p => p.Email == email);
+                return new
+                {
+                    UserName = usr.UserName,
+                    Email = usr.Email,
+                    Phone = usr.Phone,
+                    AccountStatus = usr.AccountStatus
+                };
+            }
+            return null;
         }
 
         public User GetUserById(Guid UserId)
@@ -65,7 +82,7 @@ namespace Cahut_Backend.Repository
         public User Login(LoginModel obj)
         {   
             var usr = from user in context.User
-                      where user.UserName == obj.UserName && (user.Password.SequenceEqual(Helper.Hash(obj.UserName + "^@#%!@(!&^$" + obj.Password)))
+                      where user.Email == obj.Email && (user.Password.SequenceEqual(Helper.Hash(obj.Email + "^@#%!@(!&^$" + obj.Password)))
                       select new User
                       {
                           UserId = user.UserId,
@@ -110,6 +127,38 @@ namespace Cahut_Backend.Repository
         {
             User usr = context.User.Find(userId);
             usr.Password = Helper.Hash(usr.UserName + "^@#%!@(!&^$" + newPassword);
+            return context.SaveChanges();
+        }
+
+        public bool checkEmailExisted(string email)
+        {
+            bool existed = context.User.Any(p => p.Email == email);
+            return existed;
+        }
+
+        public int UpdateUserInfo(Guid userId, UserInfoModel info)
+        {
+            User res = GetUserById(userId);
+            if (res.Email != info.Email)
+            {
+                bool exist = checkEmailExisted(info.Email);
+                if (exist)
+                {
+                    return -1;
+                }
+                else
+                {
+                    res.UserName = info.UserName;
+                    res.Phone = info.Phone;
+                    res.Email = info.Email;
+                };
+            }
+            else
+            {
+                res.UserName = info.UserName;
+                res.Phone = info.Phone;
+                res.Email = info.Email;
+            }
             return context.SaveChanges();
         }
     }

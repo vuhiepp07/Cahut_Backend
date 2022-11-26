@@ -114,9 +114,9 @@ namespace Cahut_Backend.Controllers
         }
 
         [HttpPost("group/set/role/{grName}/{userName}/{roleName}")]
-        public ResponseMessage SetMemberRole(string grName, string userName, string roleName)
+        public ResponseMessage SetMemberRole(string grName, string userEmail, string roleName)
         {
-            Guid usrId = provider.User.GetUserIdByUserName(userName);
+            Guid usrId = provider.User.GetUserIdByUserEmail(userEmail);
             int result = provider.Group.SetMemberRole(usrId, grName, roleName);
             return new ResponseMessage
             {
@@ -127,10 +127,10 @@ namespace Cahut_Backend.Controllers
         }
 
         [HttpPost("group/manage/kick/{grName}/{userName}")]
-        public ResponseMessage KickMember(string grName, string userName)
+        public ResponseMessage KickMember(string grName, string userEmail)
         {
             Group gr = provider.Group.GetGroupByName(grName);
-            Guid userId = provider.User.GetUserIdByUserName(userName);
+            Guid userId = provider.User.GetUserIdByUserEmail(userEmail);
             int deleteResult = provider.Group.DeleteMember(gr.GroupId, userId);
             int updateResult = 0;
             if(deleteResult > 0)
