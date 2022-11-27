@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace Cahut_Backend.Controllers
@@ -19,8 +20,8 @@ namespace Cahut_Backend.Controllers
         private string CreateActiveMailBody(String UserId)
         {
             string bodyMsg = "";
-            bodyMsg += "<h2>Chào mừng bạn đến với Cahut, nền tảng học online đa dạng và hiện đại" +
-                ", bạn đã đăng kí tài khoản thành công, vui lòng click vào link sau để kích hoạt tài khoản</h2>";
+            bodyMsg += "<h2>Welcome to Cahut, a diverse and modern online learning platform" +
+                ", You have successfully registered an account, please click on the following link to activate your account</h2>";
             bodyMsg += $"<h3>https://localhost:44326/auth/activate/account/{UserId}</h3>";
             return bodyMsg;
         }
@@ -28,7 +29,7 @@ namespace Cahut_Backend.Controllers
         [HttpPost("auth/register")]
         public ResponseMessage Register(RegisterModel obj)
         {
-            if(provider.User.checkEmailExisted(obj.Email) == false)
+            if(provider.User.CheckEmailExisted(obj.Email) == false)
             {
                 int ret = provider.User.Register(obj);
                 if (ret > 0)
@@ -38,7 +39,7 @@ namespace Cahut_Backend.Controllers
                     EmailMessage msg = new EmailMessage
                     {
                         EmailTo = obj.Email,
-                        Subject = "Thư mời kích hoạt tài khoản",
+                        Subject = "Account activation mail",
                         Content = bodyMsg
                     };
                     EmailSender sender = provider.Email.GetMailSender();
@@ -50,14 +51,14 @@ namespace Cahut_Backend.Controllers
                         {
                             status = true,
                             data = null,
-                            message = "Đăng kí thành công, xin mời kiểm tra mail và làm theo hướng dẫn để kích hoạt tài khoản và sử dụng"
+                            message = "Register success, please check activation mail in your email and follow the instruction"
                         };
                     }
                     return new ResponseMessage
                     {
                         status = true,
                         data = null,
-                        message = "Đăng kí thành công, gửi mail thất bại"
+                        message = "Register success but send activation mail failed"
                     };
                 }
                 else
@@ -66,7 +67,7 @@ namespace Cahut_Backend.Controllers
                     {
                         status = true,
                         data = null,
-                        message = "Đăng kí thất bại, xin mời thử lại với username khác"
+                        message = "Register failed, please try with another email"
                     };
                 }
             }
@@ -89,7 +90,16 @@ namespace Cahut_Backend.Controllers
                 {
                     status = true,
                     data = null,
-                    message = "Kích hoạt tài khoản thành công, xin mời đăng nhập"
+                    message = "Account activated, please login to proceed"
+                };
+            }
+            else if(ret == -1)
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,    
+                    message = "Account already activated, please login"
                 };
             }
             else
@@ -97,9 +107,74 @@ namespace Cahut_Backend.Controllers
                 return new ResponseMessage
                 {
                     status = false,
-                    data = null,    
-                    message = "Kích hoạt tài khoản thất bại, xin mời thử lại"
+                    data = null,
+                    message = "Account activate failed, please login to proceed"
                 };
+            }
+        }
+        private Token SaveUserInfoAndCreateTokens(User usr)
+        {
+            ClaimsIdentity claims = new ClaimsIdentity(new Claim[]
+               {
+                    new Claim(ClaimTypes.Name, usr.UserName),
+                    new Claim(ClaimTypes.Email, usr.Email),
+                    new Claim(ClaimTypes.NameIdentifier, usr.UserId.ToString()),
+               });
+            Token token = new Token
+            {
+                AccessToken = TokenServices.CreateToken(claims),
+                RefreshToken = TokenServices.CreateRefreshToken()
+            };
+            int saveToDbResult = provider.User.UpdateUserTokens(usr.UserId, token.RefreshToken, DateTime.UtcNow.AddDays(7));
+            return token;
+        }
+
+        [HttpPost("auth/googlelogin")]
+        public ResponseMessage GoogleLogin(GoogleLoginModel model)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var jwtSecurityToken = handler.ReadJwtToken(model.GoogleCredential);
+            string email = jwtSecurityToken.Claims.First(claim => claim.Type == "email").Value;
+            string name = jwtSecurityToken.Claims.First(claim => claim.Type == "name").Value;
+            string avatar = jwtSecurityToken.Claims.First(claim => claim.Type == "picture").Value;
+            if (provider.User.CheckEmailExisted(email) == true)
+            {
+                User usr = provider.User.LoginWithEmail(email);
+                if(usr.UserName != name || usr.Avatar != avatar)
+                {
+                    provider.User.UpdateUserInfo(usr.UserId, new UserInfoModel { UserName = name });
+                }
+                Token token = SaveUserInfoAndCreateTokens(usr);
+                return new ResponseMessage
+                {
+                    status = true,
+                    data = token,
+                    message = "Login success"
+                };
+            }
+            else
+            {
+                int registerResult = provider.User.RegisterWithGoogleInfo(email, name, avatar);
+                if(registerResult > 0)
+                {
+                    User usr = provider.User.LoginWithEmail(email);
+                    Token token = SaveUserInfoAndCreateTokens(usr);
+                    return new ResponseMessage
+                    {
+                        status = true,
+                        data = token,
+                        message = "Login success"
+                    };
+                }
+                else
+                {
+                    return new ResponseMessage
+                    {
+                        status = false,
+                        data = null,
+                        message = "Login failed"
+                    };
+                }
             }
         }
 
@@ -109,23 +184,12 @@ namespace Cahut_Backend.Controllers
             User usr = provider.User.Login(obj);
             if(usr != null)
             {
-                ClaimsIdentity claims = new ClaimsIdentity(new Claim[]
-                {
-                    new Claim(ClaimTypes.Name, usr.UserName),
-                    new Claim(ClaimTypes.Email, usr.Email),
-                    new Claim(ClaimTypes.NameIdentifier, usr.UserId.ToString()),
-                });
-                Token token = new Token
-                {
-                    AccessToken = TokenServices.CreateToken(claims),
-                    RefreshToken = TokenServices.CreateRefreshToken()
-                };
-                int saveToDbResult = provider.User.UpdateUserTokens(usr.UserId, token.RefreshToken, DateTime.UtcNow.AddDays(7));
+                Token token = SaveUserInfoAndCreateTokens(usr);
                 return new ResponseMessage
                 {
                     status = true,
                     data = token,
-                    message = "Đăng nhập thành công"
+                    message = "Login success"
                 };
             }
             else
@@ -134,7 +198,7 @@ namespace Cahut_Backend.Controllers
                 {
                     status = false,
                     data = null,
-                    message = "Đăng nhập thất bại"
+                    message = "Login failed"
                 };
             }
         }

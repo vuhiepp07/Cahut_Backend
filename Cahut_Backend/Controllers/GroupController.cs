@@ -62,13 +62,13 @@ namespace Cahut_Backend.Controllers
             if (gr != null)
             {
                 string bodyMsg = "";
-                bodyMsg += $"<h2>Bạn vừa nhận được lời mời tham gia group {gr.GroupName} trên Cahut" +
-                    ", vui lòng click vào link sau và làm theo hướng dẫn để tham gia group</h2>";
+                bodyMsg += $"<h2>You have just received an invitation to join the group {gr.GroupName} on Cahut" +
+                    ", Please click on the following link to join the group</h2>";
                 bodyMsg += $"<h3>https://localhost:44326/group/join/{gr.JoinGrString}</h3>";
                 EmailMessage msg = new EmailMessage
                 {
                     EmailTo = email,
-                    Subject = "Thư mời tham gia nhóm học tập",
+                    Subject = "Invitation to join the study group",
                     Content = bodyMsg
                 };
                 EmailSender sender = provider.Email.GetMailSender();
@@ -80,7 +80,7 @@ namespace Cahut_Backend.Controllers
                     {
                         status = true,
                         data = null,
-                        message = "Gửi mail mời người dùng tham gia thành công"
+                        message = "Send email to invite users to join successfully"
                     };
                 }
             }
@@ -88,7 +88,7 @@ namespace Cahut_Backend.Controllers
             {
                 status = false,
                 data = null,
-                message = "Gửi mail thất bại, group không tồn tại hoặc email của người dùng không đúng"
+                message = "Email sending failed, group does not exist or user's email is incorrect"
             };
         }
 
@@ -113,7 +113,7 @@ namespace Cahut_Backend.Controllers
             };
         }
 
-        [HttpPost("group/set/role/{grName}/{userName}/{roleName}")]
+        [HttpGet("group/set/role/{grName}/{userName}/{roleName}")]
         public ResponseMessage SetMemberRole(string grName, string userEmail, string roleName)
         {
             Guid usrId = provider.User.GetUserIdByUserEmail(userEmail);
@@ -126,7 +126,7 @@ namespace Cahut_Backend.Controllers
             };
         }
 
-        [HttpPost("group/manage/kick/{grName}/{userName}")]
+        [HttpGet("group/manage/kick/{grName}/{userName}")]
         public ResponseMessage KickMember(string grName, string userEmail)
         {
             Group gr = provider.Group.GetGroupByName(grName);

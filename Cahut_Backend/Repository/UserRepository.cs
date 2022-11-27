@@ -15,7 +15,7 @@ namespace Cahut_Backend.Repository
             var res = context.User.Where(p => p.UserName == UserName)
                                 .Select(p => p.UserId)
                                 .FirstOrDefault();
-            if(res == null)
+            if (res == null)
             {
                 return Guid.Empty;
             }
@@ -49,7 +49,7 @@ namespace Cahut_Backend.Repository
         public int ActivateAccount(Guid userId)
         {
             User res = context.User.SingleOrDefault(p => p.UserId == userId);
-            if(res.AccountStatus == 1)
+            if (res.AccountStatus == 1)
             {
                 return -1;
             }
@@ -60,7 +60,7 @@ namespace Cahut_Backend.Repository
         public object GetUserInfo(Guid userId)
         {
             User usr = context.User.Find(userId);
-            if(usr != null)
+            if (usr != null)
             {
                 return new
                 {
@@ -80,9 +80,25 @@ namespace Cahut_Backend.Repository
         }
 
         public User Login(LoginModel obj)
-        {   
+        {
             var usr = from user in context.User
                       where user.Email == obj.Email && (user.Password.SequenceEqual(Helper.Hash(obj.Email + "^@#%!@(!&^$" + obj.Password)))
+                      select new User
+                      {
+                          UserId = user.UserId,
+                          Avatar = user.Avatar,
+                          UserName = user.UserName,
+                          Email = user.Email,
+                          Phone = user.Phone,
+                          AccountStatus = user.AccountStatus
+                      };
+            return usr.SingleOrDefault();
+        }
+
+        public User LoginWithEmail(string email)
+        {
+            var usr = from user in context.User
+                      where user.Email == email
                       select new User
                       {
                           UserId = user.UserId,
@@ -98,7 +114,7 @@ namespace Cahut_Backend.Repository
         public int UpdateUserTokens(Guid UserId, string RefreshToken, DateTime expiredTime)
         {
             User usr = GetUserById(UserId);
-            if(usr != null)
+            if (usr != null)
             {
                 usr.RefreshToken = RefreshToken;
                 usr.RefreshTokenExpiredTime = expiredTime;
@@ -106,7 +122,7 @@ namespace Cahut_Backend.Repository
                 {
                     context.SaveChanges();
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Console.WriteLine(ex);
                 }
@@ -117,7 +133,7 @@ namespace Cahut_Backend.Repository
         public bool ValidatePassword(Guid userId, string password)
         {
             User usr = context.User.Find(userId);
-            if(usr.Password.SequenceEqual(Helper.Hash(usr.UserName + "^@#%!@(!&^$" + password)))
+            if (usr.Password.SequenceEqual(Helper.Hash(usr.UserName + "^@#%!@(!&^$" + password)))
             {
                 return true;
             }
@@ -130,7 +146,7 @@ namespace Cahut_Backend.Repository
             return context.SaveChanges();
         }
 
-        public bool checkEmailExisted(string email)
+        public bool CheckEmailExisted(string email)
         {
             bool existed = context.User.Any(p => p.Email == email);
             return existed;
@@ -139,26 +155,21 @@ namespace Cahut_Backend.Repository
         public int UpdateUserInfo(Guid userId, UserInfoModel info)
         {
             User res = GetUserById(userId);
-            if (res.Email != info.Email)
+            res.UserName = info.UserName;
+            res.Phone = info.Phone;
+            return context.SaveChanges();
+        }
+
+        public int RegisterWithGoogleInfo(string email, string name, string avatar)
+        {
+            User usr = new User
             {
-                bool exist = checkEmailExisted(info.Email);
-                if (exist)
-                {
-                    return -1;
-                }
-                else
-                {
-                    res.UserName = info.UserName;
-                    res.Phone = info.Phone;
-                    res.Email = info.Email;
-                };
-            }
-            else
-            {
-                res.UserName = info.UserName;
-                res.Phone = info.Phone;
-                res.Email = info.Email;
-            }
+                Email = email,
+                UserName = name,
+                Avatar = avatar,
+                Password = Helper.Hash(email + "^@#%!@(!&^$" + "gggggggg")
+            };
+            context.User.Add(usr);
             return context.SaveChanges();
         }
     }
