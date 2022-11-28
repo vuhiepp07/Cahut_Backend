@@ -27,8 +27,15 @@ builder.Services.AddAuthentication(p =>
         ClockSkew = TimeSpan.Zero
     };
 });
+builder.Services.AddCors(p => p.AddPolicy("corspolicy", build =>
+{
+    build.WithOrigins("http://localhost:3000").AllowAnyHeader().AllowAnyMethod();
+}));
+
 
 var app = builder.Build();
+
+app.UseCors("corspolicy");
 
 app.MapControllers();
 app.UseAuthentication();
