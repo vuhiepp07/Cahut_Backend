@@ -140,23 +140,23 @@ namespace Cahut_Backend.Repository
             return res;
         }
 
-        public object GetJoinedGroup(Guid userId)
+        public List<object> GetJoinedGroup(Guid userId)
         {
              var res = from detail in context.GroupDetail
                       join gr in context.Group
                       on detail.GroupId equals gr.GroupId
-                      where detail.MemberId == userId
+                      where detail.MemberId == userId && detail.RoleId != 1
                       select new
                       {
                           GroupName = gr.GroupName,
                           JoinedDate = detail.JoinedDate,
                           NumOfMems = gr.NumOfMems,
-                          Role = detail.RoleId == 1 ? "Owner" : detail.RoleId == 2 ? "Co-owner" : "Member",
+                          Role = detail.RoleId == 2 ? "Co-owner" : "Member",
                       };
-            return res;
+            return res.ToList<object>();
         }
 
-        public object GetManagedGroup(Guid userId)
+        public List<object> GetManagedGroup(Guid userId)
         {
             var res = from gr in context.Group
                       where gr.OwnerId == userId
@@ -167,7 +167,18 @@ namespace Cahut_Backend.Repository
                           dateCreated = gr.DateCreated,
                           inviteLink = $"https://localhost:44326/group/join/{gr.JoinGrString}"
                       };
-            return res;
+            return res.ToList<object>();
+        }
+
+        public string GetMemberRoleInGroup(Guid MemberId, Guid GroupId)
+        {
+            var res = (from detail in context.GroupDetail
+                       where detail.GroupId == GroupId && detail.MemberId == MemberId
+                       select detail.RoleId).SingleOrDefault();
+            var MemberRole = (from role in context.Role
+                        where role.RoleId == res
+                        select role.RoleName).SingleOrDefault();
+            return MemberRole;
         }
     }
 }

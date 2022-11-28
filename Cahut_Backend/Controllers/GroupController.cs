@@ -56,7 +56,7 @@ namespace Cahut_Backend.Controllers
         }
 
         [HttpPost("group/invite/{grName}/{email}"), Authorize]
-        public ResponseMessage InviteThroughMail(string email, string grName)
+        public ResponseMessage InviteThroughMail(string grName, string email)
         {
             Group gr = provider.Group.GetGroupByName(grName);
             if (gr != null)
@@ -113,7 +113,7 @@ namespace Cahut_Backend.Controllers
             };
         }
 
-        [HttpGet("group/set/role/{grName}/{userName}/{roleName}")]
+        [HttpGet("group/set/role/{grName}/{userEmail}/{roleName}")]
         public ResponseMessage SetMemberRole(string grName, string userEmail, string roleName)
         {
             Guid usrId = provider.User.GetUserIdByUserEmail(userEmail);
@@ -126,16 +126,31 @@ namespace Cahut_Backend.Controllers
             };
         }
 
-        [HttpGet("group/manage/kick/{grName}/{userName}")]
+        [HttpGet("group/manage/kick/{grName}/{userEmail}")]
         public ResponseMessage KickMember(string grName, string userEmail)
         {
             Group gr = provider.Group.GetGroupByName(grName);
             Guid userId = provider.User.GetUserIdByUserEmail(userEmail);
-            int deleteResult = provider.Group.DeleteMember(gr.GroupId, userId);
+            Guid kickerId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            string kickedMemberRole = provider.Group.GetMemberRoleInGroup(userId, gr.GroupId);
+            string kickerRole = provider.Group.GetMemberRoleInGroup(kickerId, gr.GroupId);
             int updateResult = 0;
-            if(deleteResult > 0)
+            if ((kickedMemberRole == "Co-owner" && kickerRole == "Co-owner") || kickerRole == "Member" || kickedMemberRole == "Owner")
             {
-                updateResult = provider.Group.HandleGroupNumOfMembers(gr.GroupId, "delete");
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "You do not have authority to kick this user"
+                };
+            }
+            else
+            {
+                int deleteResult = provider.Group.DeleteMember(gr.GroupId, userId);
+                if (deleteResult > 0)
+                {
+                    updateResult = provider.Group.HandleGroupNumOfMembers(gr.GroupId, "delete");
+                }
             }
             return new ResponseMessage
             {
@@ -189,6 +204,24 @@ namespace Cahut_Backend.Controllers
                 status = res is not null ? true : false,
                 data = res,
                 message = res is not null ? "Get managed group successfully" : "You have not joined any group yet"
+            };
+        }
+
+        [HttpGet("group/get/numofgroup"), Authorize]
+        public ResponseMessage CountGroupNumParticipated()
+        {
+            Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            List<object> res = provider.Group.GetJoinedGroup(userId);
+            List<object> res2 = provider.Group.GetManagedGroup(userId);
+            return new ResponseMessage
+            {
+                status = true,
+                data = new
+                {
+                    GroupsIsOwner = res2.Count(),
+                    GroupsIsNotOwner = res.Count(),
+                },
+                message = "Get num of user groups success"
             };
         }
     }
