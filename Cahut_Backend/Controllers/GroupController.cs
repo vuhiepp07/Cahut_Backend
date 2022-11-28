@@ -17,6 +17,15 @@ namespace Cahut_Backend.Controllers
         [HttpPost("group/create/{grName}"), Authorize]
         public ResponseMessage CreateGroup(string grName)
         {
+            if(provider.Group.CheckGroupNameExisted(grName) == true)
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Can not create, group name already existed"
+                };
+            }
             string OwnerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             int result = provider.Group.CreateGroup(Guid.Parse(OwnerId), grName);
             return new ResponseMessage
@@ -58,9 +67,20 @@ namespace Cahut_Backend.Controllers
         [HttpPost("group/invite/{grName}/{email}"), Authorize]
         public ResponseMessage InviteThroughMail(string grName, string email)
         {
+            Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             Group gr = provider.Group.GetGroupByName(grName);
             if (gr != null)
             {
+                string userRole = provider.Group.GetMemberRoleInGroup(userId, gr.GroupId);
+                if(userRole == "Member")
+                {
+                    return new ResponseMessage
+                    {
+                        status = false,
+                        data = null,
+                        message = "Send invitation through mail failed, only Owner or Co-owner can use this feature"
+                    };
+                }
                 string bodyMsg = "";
                 bodyMsg += $"<h2>You have just received an invitation to join the group {gr.GroupName} on Cahut" +
                     ", Please click on the following link to join the group</h2>";
@@ -88,7 +108,7 @@ namespace Cahut_Backend.Controllers
             {
                 status = false,
                 data = null,
-                message = "Email sending failed, group does not exist or user's email is incorrect"
+                message = "Email sending failed, group does not exist."
             };
         }
 
@@ -116,6 +136,27 @@ namespace Cahut_Backend.Controllers
         [HttpGet("group/set/role/{grName}/{userEmail}/{roleName}")]
         public ResponseMessage SetMemberRole(string grName, string userEmail, string roleName)
         {
+            Guid setterId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            Group gr = provider.Group.GetGroupByName(grName);
+            if(gr == null)
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Set member role failed, group does not exist"
+                };
+            }
+            string setterRole = provider.Group.GetMemberRoleInGroup(setterId, gr.GroupId);
+            if(setterRole != "Owner")
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Set role failed, only group Owner can set member role."
+                };
+            }
             Guid usrId = provider.User.GetUserIdByUserEmail(userEmail);
             int result = provider.Group.SetMemberRole(usrId, grName, roleName);
             return new ResponseMessage

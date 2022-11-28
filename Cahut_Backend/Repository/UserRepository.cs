@@ -133,7 +133,7 @@ namespace Cahut_Backend.Repository
         public bool ValidatePassword(Guid userId, string password)
         {
             User usr = context.User.Find(userId);
-            if (usr.Password.SequenceEqual(Helper.Hash(usr.UserName + "^@#%!@(!&^$" + password)))
+            if (usr.Password.SequenceEqual(Helper.Hash(usr.Email + "^@#%!@(!&^$" + password)))
             {
                 return true;
             }
@@ -142,7 +142,7 @@ namespace Cahut_Backend.Repository
         public int ChangePassword(Guid userId, string newPassword)
         {
             User usr = context.User.Find(userId);
-            usr.Password = Helper.Hash(usr.UserName + "^@#%!@(!&^$" + newPassword);
+            usr.Password = Helper.Hash(usr.Email + "^@#%!@(!&^$" + newPassword);
             return context.SaveChanges();
         }
 

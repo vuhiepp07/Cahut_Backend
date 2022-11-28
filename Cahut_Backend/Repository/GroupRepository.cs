@@ -180,5 +180,10 @@ namespace Cahut_Backend.Repository
                         select role.RoleName).SingleOrDefault();
             return MemberRole;
         }
+
+        public bool CheckGroupNameExisted(string grName)
+        {
+            return context.Group.Any(p => p.GroupName == grName);
+        }
     }
 }
