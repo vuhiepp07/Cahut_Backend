@@ -41,8 +41,18 @@ namespace Cahut_Backend.Controllers
         {
             Guid UserId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             Group gr = provider.Group.GetGroupWithInviteString(inviteString);
+
             if (gr != null)
             {
+                if (provider.Group.AlreadyJoinedGroup(UserId, gr.GroupId) == true)
+                {
+                    return new ResponseMessage
+                    {
+                        status = false,
+                        data = null,
+                        message = "Join group failed, you already joined in this group"
+                    };
+                }
                 int addResult = provider.Group.AddMember(gr.GroupId, UserId);
                 int updateResult = 0;
                 if(addResult > 0)
@@ -64,6 +74,7 @@ namespace Cahut_Backend.Controllers
             };
         }
 
+
         [HttpPost("group/invite/{grName}/{email}"), Authorize]
         public ResponseMessage InviteThroughMail(string grName, string email)
         {
@@ -84,7 +95,8 @@ namespace Cahut_Backend.Controllers
                 string bodyMsg = "";
                 bodyMsg += $"<h2>You have just received an invitation to join the group {gr.GroupName} on Cahut" +
                     ", Please click on the following link to join the group</h2>";
-                bodyMsg += $"<h3>https://localhost:44326/group/join/{gr.JoinGrString}</h3>";
+                //bodyMsg += $"<h3>https://localhost:44326/group/join/{gr.JoinGrString}</h3>";
+                bodyMsg += $"<h3>https://cahut.netlify.app/group/join/{gr.JoinGrString}</h3>";
                 EmailMessage msg = new EmailMessage
                 {
                     EmailTo = email,
@@ -121,7 +133,8 @@ namespace Cahut_Backend.Controllers
                 return new ResponseMessage
                 {
                     status = true,
-                    data = $"https://localhost:44326/group/join/{gr.JoinGrString}",
+                    //data = $"https://localhost:44326/group/join/{gr.JoinGrString}",
+                    data = $"https://cahut.netlify.app/group/join/{gr.JoinGrString}",
                     message = "Get group invite link success"
                 };
             }

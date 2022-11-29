@@ -185,5 +185,10 @@ namespace Cahut_Backend.Repository
         {
             return context.Group.Any(p => p.GroupName == grName);
         }
+
+        public bool AlreadyJoinedGroup(Guid UserId, Guid GroupId)
+        {
+            return context.GroupDetail.Any(p => p.MemberId == UserId && p.GroupId == GroupId);
+        }
     }
 }

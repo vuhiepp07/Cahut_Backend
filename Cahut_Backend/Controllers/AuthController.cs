@@ -22,7 +22,8 @@ namespace Cahut_Backend.Controllers
             string bodyMsg = "";
             bodyMsg += "<h2>Welcome to Cahut, a diverse and modern online learning platform" +
                 ", You have successfully registered an account, please click on the following link to activate your account</h2>";
-            bodyMsg += $"<h3>https://localhost:44326/auth/activate/account/{UserId}</h3>";
+            //bodyMsg += $"<h3>https://localhost:44326/auth/activate/account/{UserId}</h3>";
+            bodyMsg += $"<h3>http://cahut.netlify.app/account/activate/{UserId}</h3>";
             return bodyMsg;
         }
 
@@ -83,6 +84,15 @@ namespace Cahut_Backend.Controllers
         [HttpGet("auth/activate/account/{UserId}")]
         public ResponseMessage ActivateAccount(string UserId)
         {
+            if(provider.User.CheckUserExist(Guid.Parse(UserId)) == false)
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Account activate failed, this activation link is invalid"
+                };
+            }
             int ret = provider.User.ActivateAccount(Guid.Parse(UserId));
             if (ret > 0)
             {
@@ -184,6 +194,15 @@ namespace Cahut_Backend.Controllers
             User usr = provider.User.Login(obj);
             if(usr != null)
             {
+                if(usr.AccountStatus != 1)
+                {
+                    return new ResponseMessage
+                    {
+                        status = false,
+                        data = null,
+                        message = "Login failed, your account is not activated, please check your mail and follow the activation link to login and proceed"
+                    };
+                }
                 Token token = SaveUserInfoAndCreateTokens(usr);
                 return new ResponseMessage
                 {

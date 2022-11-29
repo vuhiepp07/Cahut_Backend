@@ -130,6 +130,11 @@ namespace Cahut_Backend.Repository
             return 0;
         }
 
+        public bool CheckUserExist(Guid UserId)
+        {
+            return context.User.Any(p => p.UserId == UserId);
+        }
+
         public bool ValidatePassword(Guid userId, string password)
         {
             User usr = context.User.Find(userId);
