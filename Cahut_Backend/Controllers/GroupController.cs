@@ -1,6 +1,7 @@
 ﻿using Cahut_Backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using System.Security.Claims;
 
 namespace Cahut_Backend.Controllers
@@ -74,6 +75,103 @@ namespace Cahut_Backend.Controllers
             };
         }
 
+        private bool SendInvitationMail(Group gr, string email)
+        {
+            string bodyMsg = "";
+            bodyMsg += $"<h2>You have just received an invitation to join the group {gr.GroupName} on Cahut" +
+                ", Please click on the following link to join the group</h2>";
+            bodyMsg += $"<h3>{Helper.TestingLink}/group/join/{gr.JoinGrString}</h3>";
+            EmailMessage msg = new EmailMessage
+            {
+                EmailTo = email,
+                Subject = "Invitation to join the study group",
+                Content = bodyMsg
+            };
+            EmailSender sender = provider.Email.GetMailSender();
+            string sendMailResult = Helper.SendEmails(sender, msg, _configuration);
+            if (sendMailResult == "Send mail success")
+            {
+                provider.Email.increaseMailSent(sender.usr);
+                return true;
+            }
+            return false;
+        }
+
+        [HttpPost("group/invitemany"), Authorize]
+        public ResponseMessage SendInvitationToArrayEmail(object emailArray)
+        {
+            List<string> emails = new List<string>();
+            JObject objTemp = JObject.Parse(emailArray.ToString());
+            JArray emailJarr = (JArray)objTemp["emailArray"];
+            string groupName = (string)objTemp["groupName"];
+            emails = emailJarr.ToObject<List<string>>();
+            Group gr = provider.Group.GetGroupByName(groupName);
+            if(gr != null)
+            {
+                Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                string userRole = provider.Group.GetMemberRoleInGroup(userId, gr.GroupId);
+                if (userRole == "Member")
+                {
+                    return new ResponseMessage
+                    {
+                        status = false,
+                        data = null,
+                        message = "Send invitation through mail failed, only Owner or Co-owner can use this feature"
+                    };
+                }
+                int sendSuccess = 0;
+                foreach (string email in emails)
+                {
+                    bool sendMailResult = SendInvitationMail(gr, email);
+                    if(sendMailResult == true)
+                    {
+                        sendSuccess++;
+                    }
+                }
+                if(sendSuccess == emails.Count)
+                {
+                    return new ResponseMessage
+                    {
+                        status = true,
+                        data = null,
+                        message = "Send join group invitation by array of emails success"
+                    };
+                }
+                else if(sendSuccess != emails.Count && sendSuccess > 0)
+                {
+                    return new ResponseMessage
+                    {
+                        status = true,
+                        data = null,
+                        message = "Send join group invitation to some email in the array were successed, but some mail were failed to send"
+                    };
+                }
+                else
+                {
+                    return new ResponseMessage
+                    {
+                        status = true,
+                        data = null,
+                        message = "Send join group invitation by array of email failed"
+                    };
+                }
+
+            }
+            return new ResponseMessage
+            {
+                status = false,
+                data = null,
+                message = "Email sending failed, group does not exist."
+            };
+
+            return new ResponseMessage
+            {
+                status = false,
+                data = emailArray,
+                message = "Send invitation through mail failed, only Owner or Co-owner can use this feature"
+            };
+        }
+
 
         [HttpPost("group/invite/{grName}/{email}"), Authorize]
         public ResponseMessage InviteThroughMail(string grName, string email)
@@ -92,22 +190,10 @@ namespace Cahut_Backend.Controllers
                         message = "Send invitation through mail failed, only Owner or Co-owner can use this feature"
                     };
                 }
-                string bodyMsg = "";
-                bodyMsg += $"<h2>You have just received an invitation to join the group {gr.GroupName} on Cahut" +
-                    ", Please click on the following link to join the group</h2>";
-                //bodyMsg += $"<h3>https://localhost:44326/group/join/{gr.JoinGrString}</h3>";
-                bodyMsg += $"<h3>https://cahut.netlify.app/group/join/{gr.JoinGrString}</h3>";
-                EmailMessage msg = new EmailMessage
+                bool sendMailResult = SendInvitationMail(gr, email);
+                
+                if (sendMailResult == true)
                 {
-                    EmailTo = email,
-                    Subject = "Invitation to join the study group",
-                    Content = bodyMsg
-                };
-                EmailSender sender = provider.Email.GetMailSender();
-                string sendMailResult = Helper.SendEmails(sender, msg, _configuration);
-                if (sendMailResult == "Send mail success")
-                {
-                    provider.Email.increaseMailSent(sender.usr);
                     return new ResponseMessage
                     {
                         status = true,
@@ -133,8 +219,7 @@ namespace Cahut_Backend.Controllers
                 return new ResponseMessage
                 {
                     status = true,
-                    //data = $"https://localhost:44326/group/join/{gr.JoinGrString}",
-                    data = $"https://cahut.netlify.app/group/join/{gr.JoinGrString}",
+                    data = $"{Helper.TestingLink}/group/join/{gr.JoinGrString}",
                     message = "Get group invite link success"
                 };
             }

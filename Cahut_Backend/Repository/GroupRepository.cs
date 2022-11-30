@@ -129,6 +129,7 @@ namespace Cahut_Backend.Repository
             var res = from detail in context.GroupDetail
                       join usr in context.User
                       on detail.MemberId equals usr.UserId
+                      orderby detail.RoleId ascending
                       where detail.GroupId == GroupId
                       select new
                       {
@@ -165,7 +166,7 @@ namespace Cahut_Backend.Repository
                           groupName = gr.GroupName,
                           numOfMems = gr.NumOfMems,
                           dateCreated = gr.DateCreated,
-                          inviteLink = $"https://localhost:44326/group/join/{gr.JoinGrString}"
+                          inviteLink = $"{Helper.TestingLink}/group/join/{gr.JoinGrString}"
                       };
             return res.ToList<object>();
         }

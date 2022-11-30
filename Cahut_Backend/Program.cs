@@ -1,3 +1,4 @@
+using Cahut_Backend;
 using Cahut_Backend.Models;
 using Cahut_Backend.Repository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -30,7 +31,9 @@ builder.Services.AddAuthentication(p =>
 builder.Services.AddCors(p => p.AddPolicy("corspolicy", build =>
 {
     //build.WithOrigins("http://localhost:3000").AllowAnyHeader().AllowAnyMethod();
-    build.WithOrigins("https://cahut.netlify.app").AllowAnyHeader().AllowAnyMethod();
+    //build.WithOrigins("https://cahut.netlify.app").AllowAnyHeader().AllowAnyMethod();
+    build.WithOrigins($"{Helper.TestingLink}").AllowAnyHeader().AllowAnyMethod();
+
 }));
 
 
