@@ -22,7 +22,11 @@ namespace Cahut_Backend.Controllers
             string bodyMsg = "";
             bodyMsg += "<h2>Welcome to Cahut, a diverse and modern online learning platform" +
                 ", You have successfully registered an account, please click on the following link to activate your account</h2>";
-            bodyMsg += $"<h3>{Helper.TestingLink}/auth/activate/account/{UserId}</h3>";
+            //link khi deploy
+            //bodyMsg += $"<h3>{Helper.TestingLink}/account/activate/{UserId}</h3>";
+
+            //link test tai localhost
+            bodyMsg += $"<h3>{Helper.TestingLink}/auth/activate/account/{UserId}</h3>"; 
             return bodyMsg;
         }
 

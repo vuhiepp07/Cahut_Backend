@@ -81,6 +81,7 @@ namespace Cahut_Backend.Controllers
             bodyMsg += $"<h2>You have just received an invitation to join the group {gr.GroupName} on Cahut" +
                 ", Please click on the following link to join the group</h2>";
             bodyMsg += $"<h3>{Helper.TestingLink}/group/join/{gr.JoinGrString}</h3>";
+
             EmailMessage msg = new EmailMessage
             {
                 EmailTo = email,
