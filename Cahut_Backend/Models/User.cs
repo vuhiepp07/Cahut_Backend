@@ -12,5 +12,6 @@
         public string RefreshToken { get; set; }
         public DateTime RefreshTokenExpiredTime { get; set; }
         public GroupDetail GroupDetail { get; set; }
+        public List<Presentation> Presentations { get; set; }
     }
 }

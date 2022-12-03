@@ -10,6 +10,10 @@ namespace Cahut_Backend.Repository
         public DbSet<Group> Group { get; set; }
         public DbSet<GroupDetail> GroupDetail { get; set; }
         public DbSet<EmailSender> EmailSender { get; set; }
+        public DbSet<Presentation> Presentation { get; set; }
+        public DbSet<Slide> Slide { get; set; }
+        public DbSet<Question> Question { get; set; }
+        public DbSet<Answer> Answer { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder builder)
         {
             base.OnConfiguring(builder);
@@ -68,6 +72,47 @@ namespace Cahut_Backend.Repository
                 entity.HasOne(p => p.Role)
                         .WithOne(p => p.GroupDetail)
                         .HasForeignKey<GroupDetail>(p => p.RoleId);
+            });
+
+            builder.Entity<Presentation>(entity =>
+            {
+                entity.ToTable("Presentation");
+                entity.HasKey(p => p.PresentationId);
+                entity.HasOne(p => p.User)
+                            .WithMany(p => p.Presentations)
+                            .HasForeignKey(p => p.TeacherId);
+            });
+
+            builder.Entity<Slide>(entity =>
+            {
+                entity.ToTable("Slide");
+                entity.HasKey(p => p.SlideId);
+                entity.HasOne(p => p.Presentation)
+                            .WithMany(p => p.Slides)
+                            .HasForeignKey(p => p.PresentationId);
+            });
+
+            builder.Entity<Question>(entity =>
+            {
+                entity.ToTable("Question");
+                entity.HasKey(p => p.QuestionId);
+                entity.HasOne(p => p.Slide)
+                        .WithOne(p => p.Question)
+                        .HasForeignKey<Question>(p => p.SlideId);
+                entity.Property(p => p.QuestionId).ValueGeneratedOnAdd();
+                entity.Property(p => p.QuestionType).IsRequired(false);
+                entity.Property(p => p.RightAnswer).IsRequired(false);
+            });
+
+            builder.Entity<Answer>(entity =>
+            {
+                entity.ToTable("Answer");
+                entity.HasKey(p => p.AnswerId);
+                entity.HasOne(p => p.Question)
+                            .WithMany(p => p.Answers)
+                            .HasForeignKey(p => p.QuestionId);
+                entity.Property(p => p.AnswerId).ValueGeneratedOnAdd();
+                entity.Property(p => p.NumSelected).HasDefaultValue(0);
             });
         }
     }

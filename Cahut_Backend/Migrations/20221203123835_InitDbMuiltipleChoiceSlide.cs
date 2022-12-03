@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CahutBackend.Migrations
 {
     /// <inheritdoc />
-    public partial class InitDb : Migration
+    public partial class InitDbMuiltipleChoiceSlide : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -65,7 +65,7 @@ namespace CahutBackend.Migrations
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     AccountStatus = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    RefreshTokenExpiredTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2022, 11, 25, 17, 8, 49, 225, DateTimeKind.Utc).AddTicks(3015))
+                    RefreshTokenExpiredTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2022, 12, 3, 12, 38, 35, 740, DateTimeKind.Utc).AddTicks(6641))
                 },
                 constraints: table =>
                 {
@@ -104,6 +104,93 @@ namespace CahutBackend.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Presentation",
+                columns: table => new
+                {
+                    PresentationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TeacherId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PresentationName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Presentation", x => x.PresentationId);
+                    table.ForeignKey(
+                        name: "FK_Presentation_User_TeacherId",
+                        column: x => x.TeacherId,
+                        principalTable: "User",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Slide",
+                columns: table => new
+                {
+                    SlideId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    SlideOrder = table.Column<int>(type: "int", nullable: false),
+                    PresentationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Slide", x => x.SlideId);
+                    table.ForeignKey(
+                        name: "FK_Slide_Presentation_PresentationId",
+                        column: x => x.PresentationId,
+                        principalTable: "Presentation",
+                        principalColumn: "PresentationId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Question",
+                columns: table => new
+                {
+                    QuestionId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    SlideId = table.Column<int>(type: "int", nullable: false),
+                    QuestionType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RightAnswer = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Question", x => x.QuestionId);
+                    table.ForeignKey(
+                        name: "FK_Question_Slide_SlideId",
+                        column: x => x.SlideId,
+                        principalTable: "Slide",
+                        principalColumn: "SlideId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Answer",
+                columns: table => new
+                {
+                    AnswerId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    QuestionId = table.Column<int>(type: "int", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Answer", x => x.AnswerId);
+                    table.ForeignKey(
+                        name: "FK_Answer_Question_QuestionId",
+                        column: x => x.QuestionId,
+                        principalTable: "Question",
+                        principalColumn: "QuestionId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Answer_QuestionId",
+                table: "Answer",
+                column: "QuestionId");
+
             migrationBuilder.CreateIndex(
                 name: "IX_Group_GroupName",
                 table: "Group",
@@ -126,6 +213,22 @@ namespace CahutBackend.Migrations
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Presentation_TeacherId",
+                table: "Presentation",
+                column: "TeacherId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Question_SlideId",
+                table: "Question",
+                column: "SlideId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Slide_PresentationId",
+                table: "Slide",
+                column: "PresentationId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_User_Email",
                 table: "User",
                 column: "Email",
@@ -136,16 +239,28 @@ namespace CahutBackend.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "Answer");
+
+            migrationBuilder.DropTable(
                 name: "EmailSender");
 
             migrationBuilder.DropTable(
                 name: "GroupDetail");
 
             migrationBuilder.DropTable(
+                name: "Question");
+
+            migrationBuilder.DropTable(
                 name: "Group");
 
             migrationBuilder.DropTable(
                 name: "Role");
+
+            migrationBuilder.DropTable(
+                name: "Slide");
+
+            migrationBuilder.DropTable(
+                name: "Presentation");
 
             migrationBuilder.DropTable(
                 name: "User");

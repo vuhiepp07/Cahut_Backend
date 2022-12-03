@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CahutBackend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20221125170849_InitDb")]
-    partial class InitDb
+    [Migration("20221203123835_InitDbMuiltipleChoiceSlide")]
+    partial class InitDbMuiltipleChoiceSlide
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,28 @@ namespace CahutBackend.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("Cahut_Backend.Models.Answer", b =>
+                {
+                    b.Property<int>("AnswerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AnswerId"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("QuestionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("AnswerId");
+
+                    b.HasIndex("QuestionId");
+
+                    b.ToTable("Answer", (string)null);
+                });
 
             modelBuilder.Entity("Cahut_Backend.Models.EmailSender", b =>
                 {
@@ -103,6 +125,60 @@ namespace CahutBackend.Migrations
                     b.ToTable("GroupDetail", (string)null);
                 });
 
+            modelBuilder.Entity("Cahut_Backend.Models.Presentation", b =>
+                {
+                    b.Property<Guid>("PresentationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PresentationName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("TeacherId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("PresentationId");
+
+                    b.HasIndex("TeacherId");
+
+                    b.ToTable("Presentation", (string)null);
+                });
+
+            modelBuilder.Entity("Cahut_Backend.Models.Question", b =>
+                {
+                    b.Property<int>("QuestionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("QuestionId"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("QuestionType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RightAnswer")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SlideId")
+                        .HasColumnType("int");
+
+                    b.HasKey("QuestionId");
+
+                    b.HasIndex("SlideId")
+                        .IsUnique();
+
+                    b.ToTable("Question", (string)null);
+                });
+
             modelBuilder.Entity("Cahut_Backend.Models.Role", b =>
                 {
                     b.Property<int>("RoleId")
@@ -118,6 +194,27 @@ namespace CahutBackend.Migrations
                     b.HasKey("RoleId");
 
                     b.ToTable("Role", (string)null);
+                });
+
+            modelBuilder.Entity("Cahut_Backend.Models.Slide", b =>
+                {
+                    b.Property<int>("SlideId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SlideId"));
+
+                    b.Property<Guid>("PresentationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("SlideOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("SlideId");
+
+                    b.HasIndex("PresentationId");
+
+                    b.ToTable("Slide", (string)null);
                 });
 
             modelBuilder.Entity("Cahut_Backend.Models.User", b =>
@@ -151,7 +248,7 @@ namespace CahutBackend.Migrations
                     b.Property<DateTime>("RefreshTokenExpiredTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2022, 11, 25, 17, 8, 49, 225, DateTimeKind.Utc).AddTicks(3015));
+                        .HasDefaultValue(new DateTime(2022, 12, 3, 12, 38, 35, 740, DateTimeKind.Utc).AddTicks(6641));
 
                     b.Property<string>("UserName")
                         .IsRequired()
@@ -163,6 +260,17 @@ namespace CahutBackend.Migrations
                         .IsUnique();
 
                     b.ToTable("User", (string)null);
+                });
+
+            modelBuilder.Entity("Cahut_Backend.Models.Answer", b =>
+                {
+                    b.HasOne("Cahut_Backend.Models.Question", "Question")
+                        .WithMany("Answers")
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Question");
                 });
 
             modelBuilder.Entity("Cahut_Backend.Models.GroupDetail", b =>
@@ -192,10 +300,53 @@ namespace CahutBackend.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Cahut_Backend.Models.Presentation", b =>
+                {
+                    b.HasOne("Cahut_Backend.Models.User", "User")
+                        .WithMany("Presentations")
+                        .HasForeignKey("TeacherId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Cahut_Backend.Models.Question", b =>
+                {
+                    b.HasOne("Cahut_Backend.Models.Slide", "Slide")
+                        .WithOne("Question")
+                        .HasForeignKey("Cahut_Backend.Models.Question", "SlideId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Slide");
+                });
+
+            modelBuilder.Entity("Cahut_Backend.Models.Slide", b =>
+                {
+                    b.HasOne("Cahut_Backend.Models.Presentation", "Presentation")
+                        .WithMany("Slides")
+                        .HasForeignKey("PresentationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Presentation");
+                });
+
             modelBuilder.Entity("Cahut_Backend.Models.Group", b =>
                 {
                     b.Navigation("GroupDetail")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Cahut_Backend.Models.Presentation", b =>
+                {
+                    b.Navigation("Slides");
+                });
+
+            modelBuilder.Entity("Cahut_Backend.Models.Question", b =>
+                {
+                    b.Navigation("Answers");
                 });
 
             modelBuilder.Entity("Cahut_Backend.Models.Role", b =>
@@ -204,10 +355,18 @@ namespace CahutBackend.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Cahut_Backend.Models.Slide", b =>
+                {
+                    b.Navigation("Question")
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Cahut_Backend.Models.User", b =>
                 {
                     b.Navigation("GroupDetail")
                         .IsRequired();
+
+                    b.Navigation("Presentations");
                 });
 #pragma warning restore 612, 618
         }
