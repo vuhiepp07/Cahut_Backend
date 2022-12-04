@@ -153,5 +153,129 @@ namespace Cahut_Backend.Controllers
                 message = "Delete failed, question does not exist"
             };
         }
+
+        [HttpPost("/slide/add/answer"), Authorize]
+        public ResponseMessage AddAnswer(object answer)
+        {
+            JObject ans = JObject.Parse(answer.ToString());
+            string content = (string)ans["content"];
+            string questionId = (string)ans["questionId"];
+
+            bool questionExisted = provider.Question.CheckExistedId(questionId);
+            if (questionExisted == true)
+            {
+                string answerId = Helper.RandomString(8);
+                while (provider.Answer.AnswerIdExisted(answerId) == true)
+                {
+                    answerId = Helper.RandomString(8);
+                };
+                int addResult = provider.Answer.Add(answerId, questionId, content);
+                return new ResponseMessage
+                {
+                    status = addResult > 0 ? true : false,
+                    data = addResult > 0 ? new { answerId = answerId, content = content }:null,
+                    message = addResult > 0 ? "Add answer for question success" : "Add answer failed",
+                };
+            }
+            return new ResponseMessage
+            {
+                status = false,
+                data = null,
+                message = "Add answer failed, question does not exist"
+            };
+        }
+
+        [HttpPost("/slide/update/answer"), Authorize]
+        public ResponseMessage UpdateAnswer(object answer)
+        {
+            JObject ans = JObject.Parse(answer.ToString());
+            string content = (string)ans["content"];
+            string answerId = (string)ans["answerId"];
+            bool answerExisted = provider.Answer.AnswerIdExisted(answerId);
+            if(answerExisted == true)
+            {
+                int updateResult = provider.Answer.Update(answerId, content);
+                if(updateResult > 0)
+                {
+                    return new ResponseMessage
+                    {
+                        status = true,
+                        data = new { answerId = answerId, content = content },
+                        message = "Update answer success"
+                    };
+                }
+                else
+                {
+                    return new ResponseMessage
+                    {
+                        status = false,
+                        data = null,
+                        message = "Update answer failed"
+                    };
+                }
+            }
+            return new ResponseMessage
+            {
+                status = false,
+                data = null,
+                message = "Update answer failed, answer does not existed"
+            };
+        }
+
+        [HttpGet("/slide/delete/answer"), Authorize]
+        public ResponseMessage DeleteAnswer(string answerId)
+        {
+            bool answerExisted = provider.Answer.AnswerIdExisted(answerId);
+            if(answerExisted == true)
+            {
+                int deleteResult = provider.Answer.Delete(answerId);
+                if(deleteResult > 0)
+                {
+                    return new ResponseMessage
+                    {
+                        status = true,
+                        data = null,
+                        message = "Delete answer success"
+                    };
+                }
+                else
+                {
+                    return new ResponseMessage
+                    {
+                        status = false,
+                        data = null,
+                        message = "Delete answer failed"
+                    };
+                }
+            }
+            return new ResponseMessage
+            {
+                status = false,
+                data = null,
+                message = "Delete answer failed, answer does not exist"
+            };
+        }
+
+        [HttpGet("/slide/get/answers"), Authorize]
+        public ResponseMessage GetQuestionAnswers(string questionId)
+        {
+            bool questionExist = provider.Question.CheckExistedId(questionId);
+            if(questionExist == true)
+            {
+                List<object> answers = provider.Answer.GetQuestionAnswer(questionId);
+                return new ResponseMessage
+                {
+                    status = true,
+                    data = answers,
+                    message = "Get question's answers success"
+                };
+            }
+            return new ResponseMessage
+            {
+                status = false,
+                data = null,
+                message = "Get answers failed, question does not exist"
+            };
+        }
     }
 }
