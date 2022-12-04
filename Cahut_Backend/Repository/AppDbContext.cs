@@ -100,7 +100,6 @@ namespace Cahut_Backend.Repository
                 entity.HasOne(p => p.Slide)
                         .WithOne(p => p.Question)
                         .HasForeignKey<Question>(p => p.SlideId);
-                entity.Property(p => p.QuestionId).ValueGeneratedOnAdd();
                 entity.Property(p => p.QuestionType).IsRequired(false);
                 entity.Property(p => p.RightAnswer).IsRequired(false);
             });
@@ -112,7 +111,6 @@ namespace Cahut_Backend.Repository
                 entity.HasOne(p => p.Question)
                             .WithMany(p => p.Answers)
                             .HasForeignKey(p => p.QuestionId);
-                entity.Property(p => p.AnswerId).ValueGeneratedOnAdd();
                 entity.Property(p => p.NumSelected).HasDefaultValue(0);
             });
         }

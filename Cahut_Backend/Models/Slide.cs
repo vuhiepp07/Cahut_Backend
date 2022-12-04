@@ -2,7 +2,7 @@
 {
     public class Slide
     {
-        public int SlideId { get; set; }
+        public string SlideId { get; set; }
         public int SlideOrder { get; set; }
         public Guid PresentationId { get; set; }
         public DateTime DateCreated { get; set; }

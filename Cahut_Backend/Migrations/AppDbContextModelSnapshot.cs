@@ -24,11 +24,8 @@ namespace CahutBackend.Migrations
 
             modelBuilder.Entity("Cahut_Backend.Models.Answer", b =>
                 {
-                    b.Property<int>("AnswerId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AnswerId"));
+                    b.Property<string>("AnswerId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -39,8 +36,9 @@ namespace CahutBackend.Migrations
                         .HasColumnType("int")
                         .HasDefaultValue(0);
 
-                    b.Property<int>("QuestionId")
-                        .HasColumnType("int");
+                    b.Property<string>("QuestionId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("AnswerId");
 
@@ -152,11 +150,8 @@ namespace CahutBackend.Migrations
 
             modelBuilder.Entity("Cahut_Backend.Models.Question", b =>
                 {
-                    b.Property<int>("QuestionId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("QuestionId"));
+                    b.Property<string>("QuestionId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -168,8 +163,9 @@ namespace CahutBackend.Migrations
                     b.Property<string>("RightAnswer")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("SlideId")
-                        .HasColumnType("int");
+                    b.Property<string>("SlideId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("QuestionId");
 
@@ -198,11 +194,8 @@ namespace CahutBackend.Migrations
 
             modelBuilder.Entity("Cahut_Backend.Models.Slide", b =>
                 {
-                    b.Property<int>("SlideId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SlideId"));
+                    b.Property<string>("SlideId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("datetime2");
@@ -253,7 +246,7 @@ namespace CahutBackend.Migrations
                     b.Property<DateTime>("RefreshTokenExpiredTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2022, 12, 4, 2, 15, 31, 62, DateTimeKind.Utc).AddTicks(1469));
+                        .HasDefaultValue(new DateTime(2022, 12, 4, 9, 5, 14, 97, DateTimeKind.Utc).AddTicks(8337));
 
                     b.Property<string>("UserName")
                         .IsRequired()
