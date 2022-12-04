@@ -65,7 +65,7 @@ namespace CahutBackend.Migrations
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     AccountStatus = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    RefreshTokenExpiredTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2022, 12, 3, 12, 38, 35, 740, DateTimeKind.Utc).AddTicks(6641))
+                    RefreshTokenExpiredTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2022, 12, 4, 2, 15, 31, 62, DateTimeKind.Utc).AddTicks(1469))
                 },
                 constraints: table =>
                 {
@@ -130,8 +130,9 @@ namespace CahutBackend.Migrations
                 {
                     SlideId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    SlideOrder = table.Column<int>(type: "int", nullable: false),
-                    PresentationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    SlideOrder = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    PresentationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -151,8 +152,8 @@ namespace CahutBackend.Migrations
                     QuestionId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     SlideId = table.Column<int>(type: "int", nullable: false),
-                    QuestionType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RightAnswer = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    QuestionType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RightAnswer = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
@@ -173,7 +174,8 @@ namespace CahutBackend.Migrations
                     AnswerId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     QuestionId = table.Column<int>(type: "int", nullable: false),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    NumSelected = table.Column<int>(type: "int", nullable: false, defaultValue: 0)
                 },
                 constraints: table =>
                 {

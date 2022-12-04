@@ -90,6 +90,7 @@ namespace Cahut_Backend.Repository
                 entity.HasOne(p => p.Presentation)
                             .WithMany(p => p.Slides)
                             .HasForeignKey(p => p.PresentationId);
+                entity.Property(p => p.SlideOrder).HasDefaultValue(0);
             });
 
             builder.Entity<Question>(entity =>

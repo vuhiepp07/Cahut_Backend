@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CahutBackend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20221203123835_InitDbMuiltipleChoiceSlide")]
+    [Migration("20221204021531_InitDbMuiltipleChoiceSlide")]
     partial class InitDbMuiltipleChoiceSlide
     {
         /// <inheritdoc />
@@ -36,6 +36,11 @@ namespace CahutBackend.Migrations
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("NumSelected")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<int>("QuestionId")
                         .HasColumnType("int");
@@ -161,11 +166,9 @@ namespace CahutBackend.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("QuestionType")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RightAnswer")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("SlideId")
@@ -204,11 +207,16 @@ namespace CahutBackend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SlideId"));
 
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
                     b.Property<Guid>("PresentationId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("SlideOrder")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.HasKey("SlideId");
 
@@ -248,7 +256,7 @@ namespace CahutBackend.Migrations
                     b.Property<DateTime>("RefreshTokenExpiredTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2022, 12, 3, 12, 38, 35, 740, DateTimeKind.Utc).AddTicks(6641));
+                        .HasDefaultValue(new DateTime(2022, 12, 4, 2, 15, 31, 62, DateTimeKind.Utc).AddTicks(1469));
 
                     b.Property<string>("UserName")
                         .IsRequired()
