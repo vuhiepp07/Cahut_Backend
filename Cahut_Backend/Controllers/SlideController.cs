@@ -11,19 +11,21 @@ namespace Cahut_Backend.Controllers
     [ApiController]
     public class SlideController : BaseController
     {
+
         [HttpPost("/slide/create"), Authorize]
-        public ResponseMessage Create(string presentationName)
+        public ResponseMessage Create(string presentationId)
         {
             Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            Presentation presentation = provider.Presentation.GetPresentationByNameAndTeacherId(presentationName, userId);
-            if (presentation is not null)
+            //Presentation presentation = provider.Presentation.GetPresentationByNameAndTeacherId(presentationName, userId);
+            bool isExisted = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
+            if (isExisted == true)
             {
                 string slideId = Helper.RandomString(8);
                 while (provider.Slide.CheckSlideIdExisted(slideId) == true)
                 {
                     slideId = Helper.RandomString(8);
                 }
-                int createResult = provider.Slide.Create(presentation.PresentationId, slideId);
+                int createResult = provider.Slide.Create(Guid.Parse(presentationId), slideId);
                 return new ResponseMessage
                 {
                     status = createResult > 0 ? true : false,
@@ -94,7 +96,7 @@ namespace Cahut_Backend.Controllers
             };
     }
 
-        [HttpGet("/slide/get/question"), Authorize]
+        [HttpGet("/slide/get/question")]
         public ResponseMessage GetSlideQuestion(string slideId)
         {
             object question = provider.Question.GetSlideQuestion(slideId);
@@ -258,7 +260,7 @@ namespace Cahut_Backend.Controllers
             };
         }
 
-        [HttpGet("/slide/get/answers"), Authorize]
+        [HttpGet("/slide/get/answers")]
         public ResponseMessage GetQuestionAnswers(string questionId)
         {
             bool questionExist = provider.Question.CheckExistedId(questionId);

@@ -11,6 +11,24 @@ namespace Cahut_Backend.Controllers
     [ApiController]
     public class PresentationController : BaseController
     {
+        [HttpGet("/presentation/getslides")]
+        public ResponseMessage GetPresentationSlide(string presentationId)
+        {
+            Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            bool isExisted = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
+            if (isExisted)
+            {
+                List<object> res = provider.Presentation.GetPresentationSlides(Guid.Parse(presentationId));
+            }
+            return new ResponseMessage
+            {
+                status = false,
+                data = null,
+                message = "Presentation does not exist"
+            };
+        }
+
+
         [HttpPost("/presentation/create"), Authorize]
         public ResponseMessage Create(string presentationName)
         {
@@ -39,10 +57,12 @@ namespace Cahut_Backend.Controllers
         {
             Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             JObject objTemp = JObject.Parse(PresentInfo.ToString());
-            string oldName = (string)objTemp["oldName"];
+            string presentationId = (string)objTemp["presentationId"];
+            //string oldName = (string)objTemp["oldName"];
             string newName = (string)objTemp["newName"];
-            Presentation presentation = provider.Presentation.GetPresentationByNameAndTeacherId(oldName, userId);
-            if(presentation is not null)
+            bool isExited = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
+            //Presentation presentation = provider.Presentation.GetPresentationByNameAndTeacherId(oldName, userId);
+            if(isExited == true)
             {
                 bool newNameExisted = provider.Presentation.CheckExisted(userId, newName);
                 if(newNameExisted == true)
@@ -54,7 +74,7 @@ namespace Cahut_Backend.Controllers
                         message = $"Presentation '{newName}' already existed in your presentation list"
                     };
                 }
-                int updateResult = provider.Presentation.Update(presentation.PresentationId, newName);
+                int updateResult = provider.Presentation.Update(Guid.Parse(presentationId), userId, newName);
                 return new ResponseMessage
                 {
                     status = updateResult > 0 ? true : false,
@@ -103,6 +123,28 @@ namespace Cahut_Backend.Controllers
                 status = true,
                 data = list,
                 message = list.Count > 0 ? "Get presentation list success" : "Your presentation list is empty, please create a new presentation first"
+            };
+        }
+
+        [HttpGet("/presentation/name")]
+        public ResponseMessage GetPresentationName(string presentationId)
+        {
+            Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            bool isExisted = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
+            if (isExisted)
+            {
+                return new ResponseMessage
+                {
+                    status = true,
+                    data = new { presentationName = provider.Presentation.GetPresentationName(Guid.Parse(presentationId)) },
+                    message = "Get presentation name success"
+                };
+            }
+            return new ResponseMessage
+            {
+                status = false,
+                data = null,
+                message = "Get presentation failed, presentation does not exist"
             };
         }
     }

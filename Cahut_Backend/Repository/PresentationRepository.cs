@@ -36,11 +36,16 @@ namespace Cahut_Backend.Repository
             return context.SaveChanges();
         }
 
-        public int Update(Guid presentationId, string newName)
+        public int Update(Guid presentationId, Guid userId, string newName)
         {
-            Presentation present = context.Presentation.Find(presentationId);
+            Presentation present = context.Presentation.Where(p => p.PresentationId == presentationId && p.TeacherId == userId).SingleOrDefault();
             present.PresentationName = newName;
             return context.SaveChanges();
+        }
+
+        public int CountNumOfSlide(Guid presentationId)
+        {
+            return context.Slide.Count(p => p.PresentationId == presentationId);
         }
 
         public List<object> GetPresentationList(Guid userId)
@@ -49,10 +54,39 @@ namespace Cahut_Backend.Repository
                       where present.TeacherId == userId
                       select new
                       {
+                          numOfSlides = CountNumOfSlide(present.PresentationId),
+                          presentationId = present.PresentationId,
                           createdDate = present.CreatedDate,
                           presentationName = present.PresentationName,
                       };
             return res.ToList<object>();
+        }
+        public bool presentationExisted(Guid presentationId, Guid userId)
+        {
+            return context.Presentation.Any(p => p.PresentationId == presentationId && p.TeacherId == userId);
+        }
+
+        public string GetPresentationName(Guid presentationId)
+        {
+            return context.Presentation.Find(presentationId).PresentationName;
+        }
+
+        public List<object> GetPresentationSlides(Guid presentationId)
+        {
+            List<object> lst = (from Slide in context.Slide
+                               orderby Slide.DateCreated
+                               where Slide.PresentationId == presentationId
+                               select new
+                               {
+                                   slideId = Slide.SlideId,
+                                   dateCreated = Slide.DateCreated
+                               }).ToList<object>();
+            return lst;
+        }
+
+        public int CountPresentationOwned(Guid userId)
+        {
+            return context.Presentation.Count(p => p.TeacherId == userId);
         }
     }
 }

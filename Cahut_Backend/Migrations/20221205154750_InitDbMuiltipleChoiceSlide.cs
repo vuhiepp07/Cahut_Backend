@@ -65,7 +65,7 @@ namespace CahutBackend.Migrations
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     AccountStatus = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    RefreshTokenExpiredTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2022, 12, 4, 9, 5, 14, 97, DateTimeKind.Utc).AddTicks(8337))
+                    RefreshTokenExpiredTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2022, 12, 5, 15, 47, 49, 961, DateTimeKind.Utc).AddTicks(7453))
                 },
                 constraints: table =>
                 {
@@ -172,7 +172,8 @@ namespace CahutBackend.Migrations
                     AnswerId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     QuestionId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    NumSelected = table.Column<int>(type: "int", nullable: false, defaultValue: 0)
+                    NumSelected = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {

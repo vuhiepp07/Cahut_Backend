@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CahutBackend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20221204090514_InitDbMuiltipleChoiceSlide")]
+    [Migration("20221205154750_InitDbMuiltipleChoiceSlide")]
     partial class InitDbMuiltipleChoiceSlide
     {
         /// <inheritdoc />
@@ -33,6 +33,9 @@ namespace CahutBackend.Migrations
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("NumSelected")
                         .ValueGeneratedOnAdd()
@@ -249,7 +252,7 @@ namespace CahutBackend.Migrations
                     b.Property<DateTime>("RefreshTokenExpiredTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2022, 12, 4, 9, 5, 14, 97, DateTimeKind.Utc).AddTicks(8337));
+                        .HasDefaultValue(new DateTime(2022, 12, 5, 15, 47, 49, 961, DateTimeKind.Utc).AddTicks(7453));
 
                     b.Property<string>("UserName")
                         .IsRequired()

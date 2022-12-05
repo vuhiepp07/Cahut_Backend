@@ -6,6 +6,7 @@
         public string AnswerId { get; set; }
         public string Content { get; set; }
         public int NumSelected { get; set; } 
+        public DateTime CreatedDate { get; set; }
         public Question Question { get; set; }
     }
 }

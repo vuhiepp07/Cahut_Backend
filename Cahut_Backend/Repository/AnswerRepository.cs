@@ -18,6 +18,7 @@ namespace Cahut_Backend.Repository
             Answer ans = new Answer
             {
                 AnswerId = answerId,
+                CreatedDate = DateTime.UtcNow.AddHours(7),
                 QuestionId = questionId,
                 Content = content
             };
@@ -51,6 +52,7 @@ namespace Cahut_Backend.Repository
         public List<object> GetQuestionAnswer(string questionId)
         {
             var res = (from ans in context.Answer
+                      orderby ans.CreatedDate
                       where ans.QuestionId == questionId
                       select new
                       {

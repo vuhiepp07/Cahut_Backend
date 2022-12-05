@@ -358,6 +358,7 @@ namespace Cahut_Backend.Controllers
                 status = true,
                 data = new
                 {
+                    PresentationNumber = provider.Presentation.CountPresentationOwned(userId),
                     GroupsIsOwner = res2.Count(),
                     GroupsIsNotOwner = res.Count(),
                 },

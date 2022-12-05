@@ -31,6 +31,9 @@ namespace CahutBackend.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("NumSelected")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
@@ -246,7 +249,7 @@ namespace CahutBackend.Migrations
                     b.Property<DateTime>("RefreshTokenExpiredTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2022, 12, 4, 9, 5, 14, 97, DateTimeKind.Utc).AddTicks(8337));
+                        .HasDefaultValue(new DateTime(2022, 12, 5, 15, 47, 49, 961, DateTimeKind.Utc).AddTicks(7453));
 
                     b.Property<string>("UserName")
                         .IsRequired()
