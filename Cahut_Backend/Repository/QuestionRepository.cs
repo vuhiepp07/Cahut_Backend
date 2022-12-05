@@ -59,5 +59,14 @@ namespace Cahut_Backend.Repository
             context.Question.Remove(ques);
             return context.SaveChanges();
         }
+
+        public string DeleteWithSlide(string slideId)
+        {
+            Question question = context.Question.Where(p => p.SlideId == slideId).SingleOrDefault();
+            string questionId = question.QuestionId;
+            context.Question.Remove(question);
+            context.SaveChanges();
+            return questionId;
+        }
     }
 }

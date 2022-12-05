@@ -39,6 +39,15 @@ namespace Cahut_Backend.Repository
             return context.SaveChanges();
         }
 
+        public int DeleteWithQuestion(string questionId)
+        {
+            List<Answer> lstAns = (from ans in context.Answer
+                      where ans.QuestionId == questionId
+                      select ans).ToList<Answer>();
+            context.Answer.RemoveRange(lstAns);
+            return context.SaveChanges();
+        }
+
         public List<object> GetQuestionAnswer(string questionId)
         {
             var res = (from ans in context.Answer

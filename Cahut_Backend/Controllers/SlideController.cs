@@ -46,6 +46,8 @@ namespace Cahut_Backend.Controllers
             if(isExisted == true)
             {
                 int deleteResult = provider.Slide.Delete(slideId);
+                //string questionId = provider.Question.DeleteWithSlide(slideId);
+                //provider.Answer.DeleteWithQuestion(questionId);
                 return new ResponseMessage
                 {
                     status = deleteResult > 0 ? true : false,
@@ -275,6 +277,79 @@ namespace Cahut_Backend.Controllers
                 status = false,
                 data = null,
                 message = "Get answers failed, question does not exist"
+            };
+        }
+
+        [HttpPost("slide/update"), Authorize]
+        public ResponseMessage UpdateSlide(object info)
+        {
+            JObject objTemp = JObject.Parse(info.ToString());
+            JObject question = JObject.Parse(objTemp["question"].ToString());
+            JArray answers = (JArray)objTemp["answers"];
+            List<JObject> answerList = answers.ToObject<List<JObject>>();
+            string questionId = question["questionId"].ToString();
+
+            if (question["isEdited"].ToString() == "true")
+            {
+                string slideId = question["slideId"].ToString();
+
+                string content = question["content"].ToString();
+                string type = question["type"].ToString();
+                bool questionExisted = provider.Question.CheckExistedId(questionId);
+                int result;
+                if (questionExisted)
+                {
+                    result = provider.Question.Update(questionId, type, content);
+                }
+                else
+                {
+                    bool slideAlreadyHasQuestion = provider.Question.CheckSlideAlreadyHaveQues(slideId);
+                    if (slideAlreadyHasQuestion == true)
+                    {
+                        return new ResponseMessage
+                        {
+                            status = false,
+                            data = null,
+                            message = "Slide already have question, can not add a new one"
+                        };
+                    }
+                        questionId = Helper.RandomString(8);
+                    while (provider.Question.CheckExistedId(questionId) == true)
+                    {
+                        questionId = Helper.RandomString(8);
+                    };
+                    result = provider.Question.AddToSlide(slideId, questionId, type, content);
+                }
+
+            }
+            for(int i =0;i < answerList.Count; i++)
+            {
+                if (answerList[i]["isEdited"].ToString() == "true")
+                {
+                    int result;
+                    string answerId = answerList[i]["answerId"].ToString();
+                    string content = answerList[i]["content"].ToString();
+                    bool answerExisted = provider.Answer.AnswerIdExisted(answerId);
+                    if (answerExisted)
+                    {
+                        result = provider.Answer.Update(answerId, content);
+                    }
+                    else
+                    {
+                        answerId = Helper.RandomString(8);
+                        while (provider.Answer.AnswerIdExisted(answerId) == true)
+                        {
+                            answerId = Helper.RandomString(8);
+                        };
+                        result = provider.Answer.Add(answerId, questionId, content);
+                    }
+                }
+            }
+            return new ResponseMessage
+            {
+                status = true,
+                data = null,
+                message = "Change saved"
             };
         }
     }
