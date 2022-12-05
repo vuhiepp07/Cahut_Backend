@@ -19,6 +19,12 @@ namespace Cahut_Backend.Controllers
             if (isExisted)
             {
                 List<object> res = provider.Presentation.GetPresentationSlides(Guid.Parse(presentationId));
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = res,
+                    message = "Get presentation slides success"
+                };
             }
             return new ResponseMessage
             {
@@ -27,7 +33,6 @@ namespace Cahut_Backend.Controllers
                 message = "Presentation does not exist"
             };
         }
-
 
         [HttpPost("/presentation/create"), Authorize]
         public ResponseMessage Create(string presentationName)

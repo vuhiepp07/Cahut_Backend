@@ -63,5 +63,16 @@ namespace Cahut_Backend.Repository
                       }).ToList<object>();
             return res;
         }
+
+        public int IncreaseByOne(string answerId)
+        {
+            Answer ans = context.Answer.Find(answerId);
+            ans.NumSelected = ans.NumSelected + 1;
+            if(context.SaveChanges() > 1)
+            {
+                return ans.NumSelected;
+            }
+            return 0;
+        }
     }
 }

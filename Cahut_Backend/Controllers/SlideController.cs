@@ -354,5 +354,36 @@ namespace Cahut_Backend.Controllers
                 message = "Change saved"
             };
         }
+
+        [HttpPost("slide/submitanswer")]
+        public ResponseMessage SubmitAnswer(string answerId)
+        {
+            bool answerExist = provider.Answer.AnswerIdExisted(answerId);
+            if (answerExist)
+            {
+                int increaseResult = provider.Answer.IncreaseByOne(answerId);
+                if(increaseResult > 0)
+                {
+                    return new ResponseMessage
+                    {
+                        status = true,
+                        data = new {currentSelected = increaseResult},
+                        message = "Submit answer success"
+                    };
+                }
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Submit answer failed"
+                };
+            }
+            return new ResponseMessage
+            {
+                status = false,
+                data = null,
+                message = "Submit answer failed, answer does not exist"
+            };
+        }
     }
 }
