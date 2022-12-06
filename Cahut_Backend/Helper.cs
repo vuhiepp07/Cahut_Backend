@@ -11,7 +11,7 @@ namespace Cahut_Backend
         
         //public static string TestingLink = "http://localhost:3000";
         public static string TestingLink = "https://localhost:44326";
-        //public static string TestingLink = "https://cahut.netlify.app";
+        //public static string TestingLink = "https://cahut2.netlify.app/";
 
         public static string RandomString(int len)
         {

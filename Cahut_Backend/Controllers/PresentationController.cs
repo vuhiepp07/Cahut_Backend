@@ -135,6 +135,19 @@ namespace Cahut_Backend.Controllers
         public ResponseMessage GetPresentationName(string presentationId)
         {
             Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            try
+            {
+                Guid id = Guid.Parse(presentationId);
+            }
+            catch (Exception ex)
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Get presentation failed, presentation does not exist"
+                };
+            }
             bool isExisted = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
             if (isExisted)
             {

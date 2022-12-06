@@ -31,7 +31,7 @@ builder.Services.AddAuthentication(p =>
 builder.Services.AddCors(p => p.AddPolicy("corspolicy", build =>
 {
     build.WithOrigins("http://localhost:3000").AllowAnyHeader().AllowAnyMethod();
-    //build.WithOrigins("https://cahut.netlify.app").AllowAnyHeader().AllowAnyMethod();
+    //build.WithOrigins("https://cahut2.netlify.app/").AllowAnyHeader().AllowAnyMethod();
     //build.WithOrigins($"{Helper.TestingLink}").AllowAnyHeader().AllowAnyMethod();
 
 }));
