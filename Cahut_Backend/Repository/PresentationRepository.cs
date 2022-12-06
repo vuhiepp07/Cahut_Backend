@@ -50,16 +50,30 @@ namespace Cahut_Backend.Repository
 
         public List<object> GetPresentationList(Guid userId)
         {
+            Dictionary<Guid, int> presentDict = new Dictionary<Guid, int>();
+            var countNum = from slide in context.Slide
+                           group slide by slide.PresentationId into g
+                           select new
+                           {
+                               count = g.Count(),
+                               presentationId = g.Key,
+                           };
+            foreach (var item in countNum)
+            {
+                presentDict.Add(item.presentationId, item.count);
+            }
+
             var res = from present in context.Presentation
                       where present.TeacherId == userId
                       select new
                       {
-                          numOfSlides = CountNumOfSlide(present.PresentationId),
+                          numOfSlides = presentDict.ContainsKey(present.PresentationId) ? presentDict[present.PresentationId] : 0,
                           presentationId = present.PresentationId,
                           createdDate = present.CreatedDate,
                           presentationName = present.PresentationName,
                       };
             return res.ToList<object>();
+
         }
         public bool presentationExisted(Guid presentationId, Guid userId)
         {

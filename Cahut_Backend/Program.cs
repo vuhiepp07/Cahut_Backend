@@ -1,6 +1,7 @@
 using Cahut_Backend;
 using Cahut_Backend.Models;
 using Cahut_Backend.Repository;
+using Cahut_Backend.SignalR.Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -30,12 +31,13 @@ builder.Services.AddAuthentication(p =>
 });
 builder.Services.AddCors(p => p.AddPolicy("corspolicy", build =>
 {
-    build.WithOrigins("http://localhost:3000").AllowAnyHeader().AllowAnyMethod();
+    build.WithOrigins("http://localhost:3000").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
     //build.WithOrigins("https://cahut.netlify.app").AllowAnyHeader().AllowAnyMethod();
     //build.WithOrigins($"{Helper.TestingLink}").AllowAnyHeader().AllowAnyMethod();
 
 }));
 
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -44,4 +46,5 @@ app.UseCors("corspolicy");
 app.MapControllers();
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapHub<SlideHub>("/slideHub");
 app.Run();
