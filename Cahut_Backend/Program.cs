@@ -41,7 +41,7 @@ builder.Services.AddCors(p => p.AddPolicy("corspolicy", build =>
 builder.Services.AddSignalR();
 
 var app = builder.Build();
-
+app.UseCors("corspolicy");
 app.MapControllers();
 app.UseAuthentication();
 app.UseAuthorization();
