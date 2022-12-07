@@ -31,10 +31,11 @@ builder.Services.AddAuthentication(p =>
 });
 builder.Services.AddCors(p => p.AddPolicy("corspolicy", build =>
 {
-    build.WithOrigins("http://localhost:3000").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
-    //build.WithOrigins("https://cahut2.netlify.app/").AllowAnyHeader().AllowAnyMethod();
+    //build.WithOrigins("http://localhost:3000").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+    //build.WithOrigins("https://cahut2.netlify.app/").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
     //build.WithOrigins($"{Helper.TestingLink}").AllowAnyHeader().AllowAnyMethod();
 
+    build.SetIsOriginAllowed(isOriginAllowed: _ => true).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
 }));
 
 

@@ -8,9 +8,14 @@ namespace Cahut_Backend
 {
     public static class Helper
     {
-        
-        //public static string TestingLink = "http://localhost:3000";
-        public static string TestingLink = "https://localhost:44326";
+        //uncomment this when test api intergrate with Front-end, both in localhost and database if offline too
+        public static string TestingLink = "http://localhost:3000";
+
+        //uncomment this when test api with post man only
+        //public static string TestingLink = "https://localhost:44326";
+
+
+        //uncomment this when deploy only
         //public static string TestingLink = "https://cahut2.netlify.app/";
 
         public static string RandomString(int len)
