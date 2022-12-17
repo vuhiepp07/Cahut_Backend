@@ -55,57 +55,5 @@ namespace Cahut_Backend.Models
                 return group;
             }
         }
-
-        PresentationRepository presentation;
-        public PresentationRepository Presentation
-        {
-            get
-            {
-                if (presentation == null)
-                {
-                    presentation = new PresentationRepository(Context);
-                }
-                return presentation;
-            }
-        }
-
-        SlideRepository slide;
-        public SlideRepository Slide
-        {
-            get
-            {
-                if (slide == null)
-                {
-                    slide = new SlideRepository(Context);
-                }
-                return slide;
-            }
-        }
-
-        QuestionRepository question;
-        public QuestionRepository Question
-        {
-            get
-            {
-                if (question == null)
-                {
-                    question = new QuestionRepository(Context);
-                }
-                return question;
-            }
-        }
-
-        AnswerRepository answer;
-        public AnswerRepository Answer
-        {
-            get
-            {
-                if (answer == null)
-                {
-                    answer = new AnswerRepository(Context);
-                }
-                return answer;
-            }
-        }
     }
 }

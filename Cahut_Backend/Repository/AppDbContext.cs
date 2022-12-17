@@ -11,9 +11,17 @@ namespace Cahut_Backend.Repository
         public DbSet<GroupDetail> GroupDetail { get; set; }
         public DbSet<EmailSender> EmailSender { get; set; }
         public DbSet<Presentation> Presentation { get; set; }
+        public DbSet<PresentationDetail> PresentationDetail { get; set; }
+        public DbSet<PresentationQuestion> PresentationQuestion { get; set; }
+        public DbSet<MultipleChoiceQuestion> MultipleChoiceQuestion { get; set; }
+        public DbSet<MultipleChoiceOption> MultipleChoiceOption { get; set; }
+        public DbSet<MultipleChoiceSlide> MultipleChoiceSlide { get; set; }
+        public DbSet<HeadingSlide> HeadingSlide { get; set; }
+        public DbSet<ParagraphSlide> ParagraphSlide { get; set; }
+        public DbSet<Chat> Chat { get; set; }
+        public DbSet<ChatMessage> ChatMessage { get; set; }
         public DbSet<Slide> Slide { get; set; }
         public DbSet<Question> Question { get; set; }
-        public DbSet<Answer> Answer { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder builder)
         {
             base.OnConfiguring(builder);
@@ -24,6 +32,14 @@ namespace Cahut_Backend.Repository
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+            //builder.Entity<Slide>()
+            //            .ToTable("Slides")
+            //            .HasDiscriminator<int>("SlideType")
+            //            .HasValue<MultipleChoiceSlide>(1)
+            //            .HasValue<ParagraphSlide>(2)
+            //            .HasValue<HeadingSlide>(3);
+
+
             builder.Entity<EmailSender>(entity => {
                 entity.ToTable("EmailSender");
                 entity.HasKey(p => p.usr);
@@ -54,6 +70,9 @@ namespace Cahut_Backend.Repository
                 entity.Property(p => p.GroupName).IsRequired(true);
                 entity.HasIndex(p => p.GroupName).IsUnique(true);
                 entity.Property(p => p.NumOfMems).HasDefaultValue(1);
+                entity.HasOne(p => p.User)
+                        .WithMany(p => p.Group)
+                        .HasForeignKey(p => p.OwnerId);
             });
 
             builder.Entity<GroupDetail>(entity => {
@@ -64,14 +83,14 @@ namespace Cahut_Backend.Repository
                 entity.HasIndex(p => p.RoleId).IsUnique(false);
                 entity.Property(p => p.RoleId).HasDefaultValue(1);
                 entity.HasOne(p => p.Group)
-                        .WithOne(p => p.GroupDetail)
-                        .HasForeignKey<GroupDetail>(p => p.GroupId);
-                entity.HasOne(p => p.User)
-                        .WithOne(p => p.GroupDetail)
-                        .HasForeignKey<GroupDetail>(p => p.MemberId);
+                        .WithMany(p => p.GroupDetails)
+                        .HasForeignKey(p => p.GroupId);
+                //entity.HasOne(p => p.User)
+                //        .WithMany(p => p.GroupDetails)
+                //        .HasForeignKey(p => p.MemberId);
                 entity.HasOne(p => p.Role)
-                        .WithOne(p => p.GroupDetail)
-                        .HasForeignKey<GroupDetail>(p => p.RoleId);
+                        .WithMany(p => p.GroupDetails)
+                        .HasForeignKey(p => p.RoleId);
             });
 
             builder.Entity<Presentation>(entity =>
@@ -80,38 +99,111 @@ namespace Cahut_Backend.Repository
                 entity.HasKey(p => p.PresentationId);
                 entity.HasOne(p => p.User)
                             .WithMany(p => p.Presentations)
-                            .HasForeignKey(p => p.TeacherId);
+                            .HasForeignKey(p => p.OwnerId);
             });
 
+            builder.Entity<Slide>().UseTpcMappingStrategy();
             builder.Entity<Slide>(entity =>
             {
-                entity.ToTable("Slide");
                 entity.HasKey(p => p.SlideId);
+            });
+
+            builder.Entity<Question>().UseTpcMappingStrategy();
+            builder.Entity<Question>(entity =>
+            {
+                entity.HasKey(p => p.QuestionId);
+            });
+
+            builder.Entity<MultipleChoiceSlide>(entity =>
+            {
+                entity.ToTable("MultipleChoiceSlide");
                 entity.HasOne(p => p.Presentation)
-                            .WithMany(p => p.Slides)
+                            .WithMany(p => p.MultipleChoiceSlides)
                             .HasForeignKey(p => p.PresentationId);
                 entity.Property(p => p.SlideOrder).HasDefaultValue(0);
             });
 
-            builder.Entity<Question>(entity =>
+            builder.Entity<HeadingSlide>(entity =>
             {
-                entity.ToTable("Question");
-                entity.HasKey(p => p.QuestionId);
-                entity.HasOne(p => p.Slide)
-                        .WithOne(p => p.Question)
-                        .HasForeignKey<Question>(p => p.SlideId);
+                entity.ToTable("HeadingSlide");
+                entity.HasOne(p => p.Presentation)
+                            .WithMany(p => p.HeadingSlides)
+                            .HasForeignKey(p => p.PresentationId);
+                entity.Property(p => p.SlideOrder).HasDefaultValue(0);
+            });
+
+            builder.Entity<ParagraphSlide>(entity =>
+            {
+                entity.ToTable("ParagraphSlide");
+                entity.HasOne(p => p.Presentation)
+                            .WithMany(p => p.ParagraphSlides)
+                            .HasForeignKey(p => p.PresentationId);
+                entity.Property(p => p.SlideOrder).HasDefaultValue(0);
+            });
+
+            builder.Entity<MultipleChoiceQuestion>().UseTpcMappingStrategy();
+            builder.Entity<MultipleChoiceQuestion>(entity =>
+            {
+                entity.ToTable("MultipleChoiceQuestion");
+                entity.HasOne(p => p.MultipleChoiceSlide)
+                        .WithMany(p => p.MultipleChoiceQuestions)
+                        .HasForeignKey(p => p.SlideId);
                 entity.Property(p => p.QuestionType).IsRequired(false);
                 entity.Property(p => p.RightAnswer).IsRequired(false);
             });
 
-            builder.Entity<Answer>(entity =>
+            builder.Entity<PresentationQuestion>(entity =>
             {
-                entity.ToTable("Answer");
-                entity.HasKey(p => p.AnswerId);
-                entity.HasOne(p => p.Question)
-                            .WithMany(p => p.Answers)
+                entity.ToTable("PresentationQuestion");
+                entity.HasOne(p => p.Presentation)
+                        .WithMany(p => p.PresentationQuestions)
+                        .HasForeignKey(p => p.PresentationId);
+                entity.Property(p => p.QuestionType).IsRequired(false);
+            });
+
+            builder.Entity<PresentationDetail>(entity =>
+            {
+                entity.ToTable("PresentationDetail");
+                entity.HasKey(p => new { p.PresentationId, p.ColaboratorId });
+                entity.HasIndex(p => p.PresentationId).IsUnique(false);
+                //entity.HasIndex(p => p.ColaboratorId).IsUnique(false);
+                //entity.HasOne(p => p.User)
+                //        .WithMany(p => p.PresentationDetails)
+                //        .HasForeignKey(p => p.ColaboratorId);
+                entity.HasOne(p => p.Presentation)
+                        .WithMany(p => p.PresentationDetails)
+                        .HasForeignKey(p => p.PresentationId);
+            });
+
+            builder.Entity<MultipleChoiceOption>(entity =>
+            {
+                entity.ToTable("MultipleChoiceOption");
+                entity.HasKey(p => p.OptionId);
+                entity.HasOne(p => p.MultipleChoiceQuestion)
+                            .WithMany(p => p.MultipleChoiceOptions)
                             .HasForeignKey(p => p.QuestionId);
                 entity.Property(p => p.NumSelected).HasDefaultValue(0);
+            });
+
+            builder.Entity<Chat>(entity =>
+            {
+                entity.ToTable("Chat");
+                entity.HasKey(p => p.ChatId);
+                entity.HasOne(p => p.Presentation)
+                            .WithOne(p => p.Chat)
+                            .HasForeignKey<Chat>(p => p.PresentationId);
+                entity.Property(p => p.NumOfMessage).HasDefaultValue(0);
+            });
+
+            builder.Entity<ChatMessage>(entity =>
+            {
+                entity.ToTable("ChatMessage");
+                entity.HasKey(p => new { p.ChatId, p.TimeSend });
+                entity.HasIndex(p => p.ChatId).IsUnique(false);
+                entity.HasIndex(p => p.TimeSend).IsUnique(false);
+                entity.HasOne(p => p.Chat)
+                            .WithMany(p => p.ChatMessages)
+                            .HasForeignKey(p => p.ChatId);
             });
         }
     }

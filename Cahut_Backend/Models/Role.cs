@@ -4,6 +4,6 @@
     {
         public int RoleId { get; set; }
         public string RoleName { get; set; }
-        public GroupDetail GroupDetail { get; set; }
+        public List<GroupDetail> GroupDetails { get; set; }
     }
 }

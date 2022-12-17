@@ -1,7 +1,7 @@
 ﻿namespace Cahut_Backend.Models
 {
-    public class RegisterModel: LoginModel
+    public class RegisterModel : LoginModel
     {
-        public string UserName { get; set; }   
+        public string UserName { get; set; }
     }
 }

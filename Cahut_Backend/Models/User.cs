@@ -11,7 +11,8 @@
         public int AccountStatus { get; set; }
         public string RefreshToken { get; set; }
         public DateTime RefreshTokenExpiredTime { get; set; }
-        public GroupDetail GroupDetail { get; set; }
+        //public List<PresentationDetail> PresentationDetails { get; set; }
+        public List<Group> Group { get; set; }
         public List<Presentation> Presentations { get; set; }
     }
 }

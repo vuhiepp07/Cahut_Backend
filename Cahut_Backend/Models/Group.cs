@@ -7,7 +7,9 @@
         public DateTime DateCreated { get; set; }
         public int NumOfMems { get; set; }
         public string JoinGrString { get; set; }
+        public bool HasPresentationPresenting { get; set; }
         public string GroupName { get; set; }
-        public GroupDetail GroupDetail { get; set; }
+        public List<GroupDetail> GroupDetails { get; set; }
+        public User User { get; set; }
     }
 }
