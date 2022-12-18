@@ -95,11 +95,13 @@ namespace Cahut_Backend.Repository
             List<MultipleChoiceSlide> multipleChoiceSlides = context.MultipleChoiceSlide.Where(p => p.PresentationId == presentationId).ToList<MultipleChoiceSlide>();
             List<ParagraphSlide> paragraphSlides = context.ParagraphSlide.Where(p => p.PresentationId == presentationId).ToList<ParagraphSlide>();
             List<HeadingSlide> headingSLides = context.HeadingSlide.Where(p => p.PresentationId == presentationId).ToList<HeadingSlide>();
-            List<Slide> res = new List<Slide>();
-            res.AddRange(multipleChoiceSlides);
-            res.AddRange(paragraphSlides);
-            res.AddRange(headingSLides);
-            return (List<object>)res.OrderBy(p => p.DateCreated);
+            List<Slide> totalSlides = new List<Slide>();
+            totalSlides.AddRange(multipleChoiceSlides);
+            totalSlides.AddRange(paragraphSlides);
+            totalSlides.AddRange(headingSLides);
+            var totalSlidesSorted = totalSlides.OrderBy(p => p.DateCreated);
+            List<object> result = new List<object> { totalSlidesSorted };
+            return result;
         }
 
         public int CountPresentationOwned(Guid userId)

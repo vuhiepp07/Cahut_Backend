@@ -38,7 +38,7 @@ namespace Cahut_Backend.Controllers
             bodyMsg += $"<h3>{Helper.TestingLink}/account/activate/{UserId}</h3>";
 
             //Uncomment this when test apis with postman only
-            //bodyMsg += $"<h3>{Helper.TestingLink}/auth/activate/account/{UserId}</h3>"; 
+            //bodyMsg += $"<h3>{Helper.TestingLink}/auth/activate/account/{UserId}</h3>";
             return bodyMsg;
         }
 

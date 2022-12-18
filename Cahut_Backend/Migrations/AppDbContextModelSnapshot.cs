@@ -200,7 +200,9 @@ namespace CahutBackend.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("IsBeingPresented")
-                        .HasColumnType("bit");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<Guid>("OwnerId")
                         .HasColumnType("uniqueidentifier");
@@ -210,7 +212,6 @@ namespace CahutBackend.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PresentationType")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("PresentationId");
@@ -325,7 +326,7 @@ namespace CahutBackend.Migrations
                     b.Property<DateTime>("RefreshTokenExpiredTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2022, 12, 18, 4, 24, 23, 909, DateTimeKind.Utc).AddTicks(3361));
+                        .HasDefaultValue(new DateTime(2022, 12, 18, 8, 59, 4, 788, DateTimeKind.Utc).AddTicks(9821));
 
                     b.Property<string>("UserName")
                         .IsRequired()

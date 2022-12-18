@@ -12,7 +12,7 @@ namespace Cahut_Backend
         public static string TestingLink = "http://localhost:3000";
 
         //uncomment this when test api with post man only
-        //public static string TestingLink = "https://localhost:44326";
+        //public static string TestingLink = "https://localhost:7080";
 
 
         //uncomment this when deploy only

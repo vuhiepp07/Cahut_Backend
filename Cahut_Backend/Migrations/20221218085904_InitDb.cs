@@ -49,7 +49,7 @@ namespace CahutBackend.Migrations
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     AccountStatus = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    RefreshTokenExpiredTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2022, 12, 18, 4, 24, 23, 909, DateTimeKind.Utc).AddTicks(3361))
+                    RefreshTokenExpiredTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2022, 12, 18, 8, 59, 4, 788, DateTimeKind.Utc).AddTicks(9821))
                 },
                 constraints: table =>
                 {
@@ -86,8 +86,8 @@ namespace CahutBackend.Migrations
                     PresentationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     OwnerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PresentationName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PresentationType = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsBeingPresented = table.Column<bool>(type: "bit", nullable: false),
+                    PresentationType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsBeingPresented = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>

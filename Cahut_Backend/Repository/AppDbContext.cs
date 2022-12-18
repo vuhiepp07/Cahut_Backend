@@ -100,6 +100,8 @@ namespace Cahut_Backend.Repository
                 entity.HasOne(p => p.User)
                             .WithMany(p => p.Presentations)
                             .HasForeignKey(p => p.OwnerId);
+                entity.Property(p => p.IsBeingPresented).HasDefaultValue(false);
+                entity.Property(p => p.PresentationType).IsRequired(false);
             });
 
             builder.Entity<Slide>().UseTpcMappingStrategy();
