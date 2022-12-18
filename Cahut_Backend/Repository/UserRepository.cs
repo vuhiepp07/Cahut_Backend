@@ -46,6 +46,13 @@ namespace Cahut_Backend.Repository
             return context.SaveChanges();
         }
 
+        public int ResetPassword(string email, string newPassword)
+        {
+            User temp = context.User.Where(p => p.Email == email).FirstOrDefault();
+            temp.Password = Helper.Hash(email + "^@#%!@(!&^$" + newPassword);
+            return context.SaveChanges();
+        }
+
         public int ActivateAccount(Guid userId)
         {
             User res = context.User.SingleOrDefault(p => p.UserId == userId);

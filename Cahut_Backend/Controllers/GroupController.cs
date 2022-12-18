@@ -365,6 +365,39 @@ namespace Cahut_Backend.Controllers
                 message = "Get num of user groups success"
             };
         }
+
+        [HttpPost("group/delete"), Authorize]
+        public ResponseMessage DeleteGroup(string grName)
+        {
+            Group group = provider.Group.GetGroupByName(grName);
+            if (group is not null)
+            {
+                Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                string role = provider.Group.GetMemberRoleInGroup(userId, group.GroupId);
+                if(role == "Owner")
+                {
+                    int deleteResult = provider.Group.DeleteGroup(group.GroupId);
+                    return new ResponseMessage
+                    {
+                        status = deleteResult > 0 ? true : false,
+                        data = null,
+                        message = deleteResult > 0 ? "Delete group success" : "Delete group failed"
+                    };
+                }
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Delete group failed, you do not have athourize"
+                };
+            }
+            return new ResponseMessage
+            {
+                status = false,
+                data = null,
+                message = "Delete group failed, group does not exist",
+            };
+        }
     }
 }
 

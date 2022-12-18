@@ -191,5 +191,12 @@ namespace Cahut_Backend.Repository
         {
             return context.GroupDetail.Any(p => p.MemberId == UserId && p.GroupId == GroupId);
         }
+
+        public int DeleteGroup(Guid GroupId)
+        {
+            Group group = context.Group.Find(GroupId);
+            context.Remove(group);
+            return context.SaveChanges();
+        }
     }
 }

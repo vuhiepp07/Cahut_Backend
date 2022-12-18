@@ -266,5 +266,51 @@ namespace Cahut_Backend.Controllers
             Guid UserId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             provider.Token.ClearUsrToken(UserId);
         }
+
+        [HttpGet("auth/forgotpassword")]
+        public ResponseMessage ForgotPassword(string email)
+        {
+            bool emailExisted = provider.User.CheckEmailExisted(email);
+            if (emailExisted)
+            {
+                string newPassword = Helper.RandomString(8);
+                int resetPasswordResult = provider.User.ResetPassword(email, newPassword);
+                if(resetPasswordResult > 0)
+                {
+                    string bodyMsg = "<h2>Hello user, you just required to reset password in our system, hear is your new password: " + $"{newPassword}" +
+                ", please login and change your password once again for security purpose</h2>";
+                    EmailMessage msg = new EmailMessage
+                    {
+                        EmailTo = email,
+                        Subject = "Account reset password mail",
+                        Content = bodyMsg
+                    };
+                    EmailSender sender = provider.Email.GetMailSender();
+                    string sendMailResult = Helper.SendEmails(sender, msg, _configuration);
+                    if (sendMailResult == "Send mail success")
+                    {
+                        provider.Email.increaseMailSent(sender.usr);
+                        return new ResponseMessage
+                        {
+                            status = true,
+                            data = null,
+                            message = "Reset password success, your new password has been sent to your registered email."
+                        };
+                    }
+                }
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Reset password failed, please try again"
+                };
+            }
+            return new ResponseMessage
+            {
+                status = false,
+                data = null,
+                message = "Reset password failed, your email is not exist in ours system"
+            };
+        }
     }
 }
