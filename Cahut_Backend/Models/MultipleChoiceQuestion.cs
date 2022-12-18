@@ -2,7 +2,6 @@
 {
     public class MultipleChoiceQuestion : Question
     {
-        public Guid MultipleChoiceQuestionId { get; set; }
         public string SlideId { get; set; }
         public string RightAnswer { get; set; }
 

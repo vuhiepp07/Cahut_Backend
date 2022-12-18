@@ -52,33 +52,31 @@ namespace Cahut_Backend.Repository
 
         public List<object> GetPresentationList(Guid userId)
         {
-            Dictionary<Guid, int> presentDict = new Dictionary<Guid, int>();
-            var countNum = from multiplechoiceSlide in context.MultipleChoiceSlide
-                           join paragraphSlide in context.ParagraphSlide on multiplechoiceSlide.PresentationId equals paragraphSlide.PresentationId
-                           join headingSlide in context.HeadingSlide on multiplechoiceSlide.PresentationId equals headingSlide.PresentationId
-                           into lstSlide
-                           from item in lstSlide
-                           group item by item.PresentationId into g
-                           select new
-                           {
-                               count = g.Count(),
-                               presentationId = g.Key,
-                           };
-            foreach(var item in countNum)
-            {
-                presentDict.Add(item.presentationId, item.count);
-            }
-
             var res = from present in context.Presentation
                       where present.OwnerId == userId
                       select new
                       {
-                          numOfSlides = presentDict.ContainsKey(present.PresentationId)?presentDict[present.PresentationId]:0,
                           presentationId = present.PresentationId,
                           createdDate = present.CreatedDate,
                           presentationName = present.PresentationName,
                       };
-            return res.ToList<object>();
+            List<object> result = new List<object>();
+            foreach(var item in res)
+            {
+                int NumOfSlides = 0;
+                NumOfSlides += context.MultipleChoiceSlide.Count(p => p.PresentationId == item.presentationId);
+                NumOfSlides += context.ParagraphSlide.Count(p => p.PresentationId == item.presentationId);
+                NumOfSlides += context.HeadingSlide.Count(p => p.PresentationId == item.presentationId);
+
+                result.Add(new
+                {
+                    presentationId = item.presentationId,
+                    createdDate = item.createdDate,
+                    presentationName = item.presentationName,
+                    numOfSlides = NumOfSlides
+                });
+            }
+            return result;
         }
         public bool presentationExisted(Guid presentationId, Guid userId)
         {

@@ -10,7 +10,7 @@ namespace Cahut_Backend.Repository
 
         public bool CheckSlideAlreadyHaveQues(string slideId)
         {
-            return context.MultipleChoiceSlide.Any(p => p.SlideId == slideId);
+            return context.MultipleChoiceQuestion.Any(p => p.SlideId == slideId);
         }
 
         public int AddToSlide(string slideId, string questionId, string type, string content)

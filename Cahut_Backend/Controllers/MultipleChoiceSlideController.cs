@@ -331,8 +331,8 @@ namespace Cahut_Backend.Controllers
                     int result;
                     string optionId = optionList[i]["optionId"].ToString();
                     string content = optionList[i]["content"].ToString();
-                    bool answerExisted = provider.MultipleChoiceOption.MultipleChoiceOptionIdExisted(optionId);
-                    if (answerExisted)
+                    bool optionExisted = provider.MultipleChoiceOption.MultipleChoiceOptionIdExisted(optionId);
+                    if (optionExisted)
                     {
                         result = provider.MultipleChoiceOption.Update(optionId, content);
                     }

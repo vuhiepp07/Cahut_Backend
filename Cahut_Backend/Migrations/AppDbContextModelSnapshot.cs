@@ -179,10 +179,6 @@ namespace CahutBackend.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("SlideId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("OptionId");
 
                     b.HasIndex("QuestionId");
@@ -326,7 +322,7 @@ namespace CahutBackend.Migrations
                     b.Property<DateTime>("RefreshTokenExpiredTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2022, 12, 18, 8, 59, 4, 788, DateTimeKind.Utc).AddTicks(9821));
+                        .HasDefaultValue(new DateTime(2022, 12, 18, 10, 28, 52, 820, DateTimeKind.Utc).AddTicks(3820));
 
                     b.Property<string>("UserName")
                         .IsRequired()
@@ -343,9 +339,6 @@ namespace CahutBackend.Migrations
             modelBuilder.Entity("Cahut_Backend.Models.MultipleChoiceQuestion", b =>
                 {
                     b.HasBaseType("Cahut_Backend.Models.Question");
-
-                    b.Property<Guid>("MultipleChoiceQuestionId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("RightAnswer")
                         .HasColumnType("nvarchar(max)");

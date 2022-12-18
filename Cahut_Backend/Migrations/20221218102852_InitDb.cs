@@ -49,7 +49,7 @@ namespace CahutBackend.Migrations
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     AccountStatus = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    RefreshTokenExpiredTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2022, 12, 18, 8, 59, 4, 788, DateTimeKind.Utc).AddTicks(9821))
+                    RefreshTokenExpiredTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2022, 12, 18, 10, 28, 52, 820, DateTimeKind.Utc).AddTicks(3820))
                 },
                 constraints: table =>
                 {
@@ -280,7 +280,6 @@ namespace CahutBackend.Migrations
                     QuestionId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     QuestionType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    MultipleChoiceQuestionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     SlideId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     RightAnswer = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
@@ -302,7 +301,6 @@ namespace CahutBackend.Migrations
                     OptionId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     QuestionId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     OptionContent = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SlideId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     NumSelected = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
