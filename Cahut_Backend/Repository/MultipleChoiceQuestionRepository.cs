@@ -2,38 +2,38 @@
 
 namespace Cahut_Backend.Repository
 {
-    public class QuestionRepository : BaseRepository
+    public class MultipleChoiceQuestionRepository : BaseRepository
     {
-        public QuestionRepository(AppDbContext context) : base(context)
+        public MultipleChoiceQuestionRepository(AppDbContext context) : base(context)
         {
         }
 
         public bool CheckSlideAlreadyHaveQues(string slideId)
         {
-            return context.Question.Any(p => p.SlideId == slideId);
+            return context.MultipleChoiceSlide.Any(p => p.SlideId == slideId);
         }
 
         public int AddToSlide(string slideId, string questionId, string type, string content)
         {
-            Question ques = new Question
+            MultipleChoiceQuestion ques = new MultipleChoiceQuestion
             {
                 SlideId = slideId,
                 QuestionId = questionId,
                 QuestionType = type,
                 Content = content,
             };
-            context.Question.Add(ques);
+            context.MultipleChoiceQuestion.Add(ques);
             return context.SaveChanges();
         }
 
         public bool CheckExistedId(string questionId)
         {
-            return context.Question.Any(p => p.QuestionId == questionId);
+            return context.MultipleChoiceQuestion.Any(p => p.QuestionId == questionId);
         }
 
         public object GetSlideQuestion(string slideId)
         {
-            var res = (from ques in context.Question
+            var res = (from ques in context.MultipleChoiceQuestion
                        where ques.SlideId == slideId
                        select new
                        {
@@ -47,24 +47,24 @@ namespace Cahut_Backend.Repository
 
         public int Update(string questionId, string type, string content)
         {
-            Question ques = context.Question.Find(questionId);
+            Question ques = context.MultipleChoiceQuestion.Find(questionId);
             ques.QuestionType = type;
-            ques.Content = content; 
+            ques.Content = content;
             return context.SaveChanges();
         }
 
         public int Delete(string questionId)
         {
-            Question ques = context.Question.Find(questionId);
-            context.Question.Remove(ques);
+            MultipleChoiceQuestion ques = context.MultipleChoiceQuestion.Find(questionId);
+            context.MultipleChoiceQuestion.Remove(ques);
             return context.SaveChanges();
         }
 
         public string DeleteWithSlide(string slideId)
         {
-            Question question = context.Question.Where(p => p.SlideId == slideId).SingleOrDefault();
+            MultipleChoiceQuestion question = context.MultipleChoiceQuestion.Where(p => p.SlideId == slideId).SingleOrDefault();
             string questionId = question.QuestionId;
-            context.Question.Remove(question);
+            context.MultipleChoiceQuestion.Remove(question);
             context.SaveChanges();
             return questionId;
         }

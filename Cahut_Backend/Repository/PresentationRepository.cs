@@ -1,5 +1,6 @@
 ﻿using Cahut_Backend.Models;
 using Newtonsoft.Json.Linq;
+using System.Linq;
 
 namespace Cahut_Backend.Repository
 {
@@ -11,7 +12,7 @@ namespace Cahut_Backend.Repository
 
         public bool CheckExisted(Guid userId, string presentationName)
         {
-            return context.Presentation.Any(p => p.TeacherId == userId && p.PresentationName == presentationName);
+            return context.Presentation.Any(p => p.OwnerId == userId && p.PresentationName == presentationName);
         }
 
         public int Create(Guid userId, string presentationName)
@@ -20,14 +21,14 @@ namespace Cahut_Backend.Repository
             {
                 PresentationName = presentationName,
                 CreatedDate = DateTime.UtcNow.AddHours(7),
-                TeacherId = userId
+                OwnerId = userId
             };
             context.Presentation.Add(present);
             return context.SaveChanges();
         }
         public Presentation GetPresentationByNameAndTeacherId(string name, Guid teacherId)
         {
-            return context.Presentation.Where(p => p.PresentationName == name && p.TeacherId == teacherId).SingleOrDefault();
+            return context.Presentation.Where(p => p.PresentationName == name && p.OwnerId == teacherId).SingleOrDefault();
         }
 
         public int Delete(Guid presentationId)
@@ -39,7 +40,7 @@ namespace Cahut_Backend.Repository
 
         public int Update(Guid presentationId, Guid userId, string newName)
         {
-            Presentation present = context.Presentation.Where(p => p.PresentationId == presentationId && p.TeacherId == userId).SingleOrDefault();
+            Presentation present = context.Presentation.Where(p => p.PresentationId == presentationId && p.OwnerId == userId).SingleOrDefault();
             present.PresentationName = newName;
             return context.SaveChanges();
         }
@@ -52,8 +53,12 @@ namespace Cahut_Backend.Repository
         public List<object> GetPresentationList(Guid userId)
         {
             Dictionary<Guid, int> presentDict = new Dictionary<Guid, int>();
-            var countNum = from slide in context.Slide
-                           group slide by slide.PresentationId into g
+            var countNum = from multiplechoiceSlide in context.MultipleChoiceSlide
+                           join paragraphSlide in context.ParagraphSlide on multiplechoiceSlide.PresentationId equals paragraphSlide.PresentationId
+                           join headingSlide in context.HeadingSlide on multiplechoiceSlide.PresentationId equals headingSlide.PresentationId
+                           into lstSlide
+                           from item in lstSlide
+                           group item by item.PresentationId into g
                            select new
                            {
                                count = g.Count(),
@@ -65,7 +70,7 @@ namespace Cahut_Backend.Repository
             }
 
             var res = from present in context.Presentation
-                      where present.TeacherId == userId
+                      where present.OwnerId == userId
                       select new
                       {
                           numOfSlides = presentDict.ContainsKey(present.PresentationId)?presentDict[present.PresentationId]:0,
@@ -77,7 +82,7 @@ namespace Cahut_Backend.Repository
         }
         public bool presentationExisted(Guid presentationId, Guid userId)
         {
-            return context.Presentation.Any(p => p.PresentationId == presentationId && p.TeacherId == userId);
+            return context.Presentation.Any(p => p.PresentationId == presentationId && p.OwnerId == userId);
         }
 
         public string GetPresentationName(Guid presentationId)
@@ -87,20 +92,19 @@ namespace Cahut_Backend.Repository
 
         public List<object> GetPresentationSlides(Guid presentationId)
         {
-            List<object> lst = (from Slide in context.Slide
-                               orderby Slide.DateCreated
-                               where Slide.PresentationId == presentationId
-                               select new
-                               {
-                                   slideId = Slide.SlideId,
-                                   dateCreated = Slide.DateCreated
-                               }).ToList<object>();
-            return lst;
+            List<MultipleChoiceSlide> multipleChoiceSlides = context.MultipleChoiceSlide.Where(p => p.PresentationId == presentationId).ToList<MultipleChoiceSlide>();
+            List<ParagraphSlide> paragraphSlides = context.ParagraphSlide.Where(p => p.PresentationId == presentationId).ToList<ParagraphSlide>();
+            List<HeadingSlide> headingSLides = context.HeadingSlide.Where(p => p.PresentationId == presentationId).ToList<HeadingSlide>();
+            List<Slide> res = new List<Slide>();
+            res.AddRange(multipleChoiceSlides);
+            res.AddRange(paragraphSlides);
+            res.AddRange(headingSLides);
+            return (List<object>)res.OrderBy(p => p.DateCreated);
         }
 
         public int CountPresentationOwned(Guid userId)
         {
-            return context.Presentation.Count(p => p.TeacherId == userId);
+            return context.Presentation.Count(p => p.OwnerId == userId);
         }
     }
 }

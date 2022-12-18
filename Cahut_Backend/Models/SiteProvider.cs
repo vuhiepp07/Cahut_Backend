@@ -55,5 +55,57 @@ namespace Cahut_Backend.Models
                 return group;
             }
         }
+
+        PresentationRepository presentation;
+        public PresentationRepository Presentation
+        {
+            get
+            {
+                if (presentation == null)
+                {
+                    presentation = new PresentationRepository(Context);
+                }
+                return presentation;
+            }
+        }
+
+        MultipleChoiceSlideRepository multipleChoiceSlide;
+        public MultipleChoiceSlideRepository MultipleChoiceSlide
+        {
+            get
+            {
+                if (multipleChoiceSlide == null)
+                {
+                    multipleChoiceSlide = new MultipleChoiceSlideRepository(Context);
+                }
+                return multipleChoiceSlide;
+            }
+        }
+
+        MultipleChoiceQuestionRepository multipleChoiceQuestion;
+        public MultipleChoiceQuestionRepository MultipleChoiceQuestion
+        {
+            get
+            {
+                if (multipleChoiceQuestion == null)
+                {
+                    multipleChoiceQuestion = new MultipleChoiceQuestionRepository(Context);
+                }
+                return multipleChoiceQuestion;
+            }
+        }
+
+        MultipleChoiceOptionRepository multipleChoiceOption;
+        public MultipleChoiceOptionRepository MultipleChoiceOption
+        {
+            get
+            {
+                if (multipleChoiceOption == null)
+                {
+                    multipleChoiceOption = new MultipleChoiceOptionRepository(Context);
+                }
+                return multipleChoiceOption;
+            }
+        }
     }
 }
