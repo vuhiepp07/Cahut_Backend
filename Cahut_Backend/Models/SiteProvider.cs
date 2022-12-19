@@ -107,5 +107,57 @@ namespace Cahut_Backend.Models
                 return multipleChoiceOption;
             }
         }
+
+        ChatRepository chat;
+        public ChatRepository Chat
+        {
+            get
+            {
+                if (chat == null)
+                {
+                    chat = new ChatRepository(Context);
+                }
+                return chat;
+            }
+        }
+
+        PresentationQuestionRepository presentationQuestion;
+        public PresentationQuestionRepository PresentationQuestion
+        {
+            get
+            {
+                if (presentationQuestion == null)
+                {
+                    presentationQuestion = new PresentationQuestionRepository(Context);
+                }
+                return presentationQuestion;
+            }
+        }
+
+        ParagraphSlideRepository paragraphSlide;
+        public ParagraphSlideRepository ParagraphSlide
+        {
+            get
+            {
+                if (paragraphSlide == null)
+                {
+                    paragraphSlide = new ParagraphSlideRepository(Context);
+                }
+                return paragraphSlide;
+            }
+        }
+
+        HeadingSlideRepository headingSlide;
+        public HeadingSlideRepository HeadingSlide
+        {
+            get
+            {
+                if (headingSlide == null)
+                {
+                    headingSlide = new HeadingSlideRepository(Context);
+                }
+                return headingSlide;
+            }
+        }
     }
 }
