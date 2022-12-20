@@ -165,5 +165,105 @@ namespace Cahut_Backend.Controllers
                 message = "Get presentation failed, presentation does not exist"
             };
         }
+
+
+        [HttpPost("/presentation/addCollaborator"), Authorize]
+        public ResponseMessage AddCollaborator(CollaboratorModel addCollaboratorModel)
+        {
+            try
+            {
+                Guid id = Guid.Parse(addCollaboratorModel.presentationId);
+            }
+            catch (Exception ex)
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Get presentation failed, presentation does not exist"
+                };
+            }
+            bool isEmailExisted = provider.User.CheckEmailExisted(addCollaboratorModel.email);
+            if (!isEmailExisted)
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "User does not existed",
+                };
+            }
+            int addResult = provider.Presentation.AddCollaborators(Guid.Parse(addCollaboratorModel.presentationId), addCollaboratorModel.email);
+            return new ResponseMessage
+            {
+                status = addResult > 0 ? true : false,
+                data = null,
+                message = addResult > 0 ? "Add collaborators successfully" : "Add collaborators failed, please try again"
+            };
+        }
+
+        [HttpPost("/presentation/removeCollaborator"), Authorize]
+        public ResponseMessage RemoveCollaborators(CollaboratorModel collaboratorModel)
+        {
+            try
+            {
+                Guid id = Guid.Parse(collaboratorModel.presentationId);
+            }
+            catch (Exception ex)
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Get presentation failed, presentation does not exist"
+                };
+            }
+            bool isEmailExisted = provider.User.CheckEmailExisted(collaboratorModel.email);
+            if (!isEmailExisted)
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "User does not existed",
+                };
+            }
+            int removeResult = provider.Presentation.DeletCollaborators(Guid.Parse(collaboratorModel.presentationId), collaboratorModel.email);
+            return new ResponseMessage
+            {
+                status = removeResult > 0 ? true : false,
+                data = null,
+                message = removeResult > 0 ? "Delete collaborators successfully" : "Delete collaborators failed, please try again"
+            };
+        }
+
+        [HttpPost("/presentation/getCollaborators"), Authorize]
+        public ResponseMessage GetCollaborators(object presentationId)
+        {
+            JObject objTemp = JObject.Parse(presentationId.ToString());
+            string presentId = (string)objTemp["presentationId"];
+        
+            try
+            {
+                Guid id = Guid.Parse(presentId);
+            }
+            catch (Exception ex)
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Get presentation failed, presentation does not exist"
+                };
+            }
+
+            List<User> collaborators = provider.Presentation.GetCollaborators(Guid.Parse(presentId));
+            return new ResponseMessage
+            {
+                status = collaborators.Count > 0 ? true : false,
+                data = collaborators,
+                message = collaborators.Count > 0 ? "Get collaborators successfully" : "Get collaborators failed, please try again"
+            };
+        }
     }
 }
