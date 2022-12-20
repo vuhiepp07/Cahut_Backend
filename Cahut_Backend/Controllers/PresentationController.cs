@@ -167,12 +167,19 @@ namespace Cahut_Backend.Controllers
         }
 
 
-        [HttpPost("/presentation/addCollaborator"), Authorize]
-        public ResponseMessage AddCollaborator(CollaboratorModel addCollaboratorModel)
+        [HttpPost("/presentation/addCollaborators"), Authorize]
+        public ResponseMessage AddCollaborator(object addCollaboratorModel)
         {
+            List<string> emails = new List<string>();
+            JObject objTemp = JObject.Parse(addCollaboratorModel.ToString());
+            JArray emailJarr = (JArray)objTemp["emailArray"];
+            string presentationId = (string)objTemp["presentationId"];
+            emails = emailJarr.ToObject<List<string>>();
+
+
             try
             {
-                Guid id = Guid.Parse(addCollaboratorModel.presentationId);
+                Guid id = Guid.Parse(presentationId);
             }
             catch (Exception ex)
             {
@@ -183,17 +190,23 @@ namespace Cahut_Backend.Controllers
                     message = "Get presentation failed, presentation does not exist"
                 };
             }
-            bool isEmailExisted = provider.User.CheckEmailExisted(addCollaboratorModel.email);
-            if (!isEmailExisted)
+
+            foreach(var email in emails)
             {
-                return new ResponseMessage
+                bool isEmailExisted = provider.User.CheckEmailExisted(email);
+                if (!isEmailExisted)
                 {
-                    status = false,
-                    data = null,
-                    message = "User does not existed",
-                };
+                    return new ResponseMessage
+                    {
+                        status = false,
+                        data = null,
+                        message = "User in send email list does not existed",
+                    };
+                }
             }
-            int addResult = provider.Presentation.AddCollaborators(Guid.Parse(addCollaboratorModel.presentationId), addCollaboratorModel.email);
+
+            
+            int addResult = provider.Presentation.AddCollaborators(Guid.Parse(presentationId), emails);
             return new ResponseMessage
             {
                 status = addResult > 0 ? true : false,
@@ -237,7 +250,7 @@ namespace Cahut_Backend.Controllers
             };
         }
 
-        [HttpPost("/presentation/getCollaborators"), Authorize]
+        [HttpGet("/presentation/getCollaborators"), Authorize]
         public ResponseMessage GetCollaborators(object presentationId)
         {
             JObject objTemp = JObject.Parse(presentationId.ToString());

@@ -107,30 +107,31 @@ namespace Cahut_Backend.Repository
             return context.Presentation.Count(p => p.OwnerId == userId);
         }
 
-        public int AddCollaborators(Guid presentationId, string email)
+        public int AddCollaborators(Guid presentationId, List<string> emails)
         {
-            
-
-            var res = context.User.Where(p => p.Email == email)
+            foreach(var email in emails)
+            {
+                var res = context.User.Where(p => p.Email == email)
                                 .Select(p => p.UserId)
                                 .FirstOrDefault();
-            if (res == null)
-            {
-                return 0;
-            }
+                if (res == null)
+                {
+                    return 0;
+                }
 
-            bool isCollabExist = context.PresentationDetail.Any(c => c.PresentationId == presentationId && c.ColaboratorId == res);
-            if (isCollabExist)
-            {
-                return 0;
-            }
+                bool isCollabExist = context.PresentationDetail.Any(c => c.PresentationId == presentationId && c.ColaboratorId == res);
+                if (isCollabExist)
+                {
+                    return 0;
+                }
 
-            PresentationDetail presentationDetail = new PresentationDetail{
-                PresentationId = presentationId,
-                ColaboratorId = res,
-            };
-            context.PresentationDetail.Add(presentationDetail);
-            
+                PresentationDetail presentationDetail = new PresentationDetail
+                {
+                    PresentationId = presentationId,
+                    ColaboratorId = res,
+                };
+                context.PresentationDetail.Add(presentationDetail);
+            }
             return context.SaveChanges();
         }
 
