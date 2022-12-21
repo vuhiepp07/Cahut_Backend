@@ -170,6 +170,7 @@ namespace Cahut_Backend.Controllers
         [HttpPost("/presentation/addCollaborators"), Authorize]
         public ResponseMessage AddCollaborator(object addCollaboratorModel)
         {
+
             Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
             List<string> emails = new List<string>();
@@ -178,32 +179,59 @@ namespace Cahut_Backend.Controllers
             string presentationId = (string)objTemp["presentationId"];
             emails = emailJarr.ToObject<List<string>>();
 
-
-            foreach(var email in emails)
-            {
-                bool isEmailExisted = provider.User.CheckEmailExisted(email);
-                if (!isEmailExisted)
-                {
-                    return new ResponseMessage
-                    {
-                        status = false,
-                        data = null,
-                        message = "User in send email list does not existed",
-                    };
-                }
-            }
+            List<string> exisedEmail = new List<string>();
 
             bool checkPresentation = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
             if (checkPresentation)
             {
-                int addResult = provider.Presentation.AddCollaborators(Guid.Parse(presentationId), emails);
-                return new ResponseMessage
+                int collabAdded = 0;
+
+                foreach (var email in emails)
                 {
-                    status = addResult > 0 ? true : false,
-                    data = null,
-                    message = addResult > 0 ? "Add collaborators successfully" : "Add collaborators failed, please try again"
-                };
+
+                    bool isAdded = provider.Presentation.AddCollaborators(Guid.Parse(presentationId), email);
+                    if (isAdded)
+                    {
+                        collabAdded++;
+                    }
+                    else
+                    {
+                        exisedEmail.Add(email);
+                    }
+                }
+
+                if (collabAdded == emails.Count)
+                {
+                    return new ResponseMessage
+                    {
+                        status = true,
+                        data = null,
+                        message = "Add collaborators successfully"
+                    };
+                }
+
+                if(collabAdded != emails.Count && collabAdded > 0)
+                {
+                    return new ResponseMessage
+                    {
+                        status = false,
+                        data = exisedEmail,
+                        message = "Some emails cannnot be added"
+                    };
+                }
+                else
+                {
+                    return new ResponseMessage
+                    {
+                        status = false,
+                        data = exisedEmail,
+                        message = "Failed to add, all collaborators are added"
+                    };
+                }
             }
+                
+            
+            
 
             return new ResponseMessage
             {
@@ -248,16 +276,15 @@ namespace Cahut_Backend.Controllers
         }
 
         [HttpGet("/presentation/getCollaborators"), Authorize]
-        public ResponseMessage GetCollaborators(object presentationId)
+        public ResponseMessage GetCollaborators(string presentationId)
         {
             Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            JObject objTemp = JObject.Parse(presentationId.ToString());
-            string presentId = (string)objTemp["presentationId"];
+            Console.WriteLine(presentationId);
 
-            bool checkPresentation = provider.Presentation.presentationExisted(Guid.Parse(presentId), userId);
+            bool checkPresentation = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
             if (checkPresentation)
             {
-                object collaborators = provider.Presentation.GetCollaborators(Guid.Parse(presentId));
+                object collaborators = provider.Presentation.GetCollaborators(Guid.Parse(presentationId));
                 return new ResponseMessage
                 {
                     status = collaborators is not null ? true : false,
