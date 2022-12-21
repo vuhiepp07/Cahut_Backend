@@ -150,13 +150,18 @@ namespace Cahut_Backend.Repository
             return context.SaveChanges();
         }
 
-        public List<User> GetCollaborators(Guid presentationId)
+        public object GetCollaborators(Guid presentationId)
         {
             var collaborators = from presentationDetail in context.PresentationDetail
-                         join user in context.User
-                         on presentationDetail.ColaboratorId equals user.UserId
-                         select user;
-            return collaborators.ToList<User>();
+                                join user in context.User
+                                on presentationDetail.ColaboratorId equals user.UserId
+                                where presentationDetail.PresentationId == presentationId
+                                select new
+                                {
+                                    username = user.UserName,
+                                    email = user.Email,
+                                };
+            return collaborators;
         }
     }
 }

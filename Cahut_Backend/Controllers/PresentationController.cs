@@ -170,26 +170,14 @@ namespace Cahut_Backend.Controllers
         [HttpPost("/presentation/addCollaborators"), Authorize]
         public ResponseMessage AddCollaborator(object addCollaboratorModel)
         {
+            Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
             List<string> emails = new List<string>();
             JObject objTemp = JObject.Parse(addCollaboratorModel.ToString());
             JArray emailJarr = (JArray)objTemp["emailArray"];
             string presentationId = (string)objTemp["presentationId"];
             emails = emailJarr.ToObject<List<string>>();
 
-
-            try
-            {
-                Guid id = Guid.Parse(presentationId);
-            }
-            catch (Exception ex)
-            {
-                return new ResponseMessage
-                {
-                    status = false,
-                    data = null,
-                    message = "Get presentation failed, presentation does not exist"
-                };
-            }
 
             foreach(var email in emails)
             {
@@ -205,32 +193,29 @@ namespace Cahut_Backend.Controllers
                 }
             }
 
-            
-            int addResult = provider.Presentation.AddCollaborators(Guid.Parse(presentationId), emails);
+            bool checkPresentation = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
+            if (checkPresentation)
+            {
+                int addResult = provider.Presentation.AddCollaborators(Guid.Parse(presentationId), emails);
+                return new ResponseMessage
+                {
+                    status = addResult > 0 ? true : false,
+                    data = null,
+                    message = addResult > 0 ? "Add collaborators successfully" : "Add collaborators failed, please try again"
+                };
+            }
+
             return new ResponseMessage
             {
-                status = addResult > 0 ? true : false,
+                status = false,
                 data = null,
-                message = addResult > 0 ? "Add collaborators successfully" : "Add collaborators failed, please try again"
+                message = "Add collaborators failed, please try again"
             };
         }
 
         [HttpPost("/presentation/removeCollaborator"), Authorize]
         public ResponseMessage RemoveCollaborators(CollaboratorModel collaboratorModel)
         {
-            try
-            {
-                Guid id = Guid.Parse(collaboratorModel.presentationId);
-            }
-            catch (Exception ex)
-            {
-                return new ResponseMessage
-                {
-                    status = false,
-                    data = null,
-                    message = "Get presentation failed, presentation does not exist"
-                };
-            }
             bool isEmailExisted = provider.User.CheckEmailExisted(collaboratorModel.email);
             if (!isEmailExisted)
             {
@@ -241,41 +226,50 @@ namespace Cahut_Backend.Controllers
                     message = "User does not existed",
                 };
             }
-            int removeResult = provider.Presentation.DeletCollaborators(Guid.Parse(collaboratorModel.presentationId), collaboratorModel.email);
+
+            Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            bool checkPresentation = provider.Presentation.presentationExisted(Guid.Parse(collaboratorModel.presentationId), userId);
+            if (checkPresentation)
+            {
+                int removeResult = provider.Presentation.DeletCollaborators(Guid.Parse(collaboratorModel.presentationId), collaboratorModel.email);
+                return new ResponseMessage
+                {
+                    status = removeResult > 0 ? true : false,
+                    data = null,
+                    message = removeResult > 0 ? "Delete collaborators successfully" : "Delete collaborators failed, please try again"
+                };
+            }
             return new ResponseMessage
             {
-                status = removeResult > 0 ? true : false,
+                status = false,
                 data = null,
-                message = removeResult > 0 ? "Delete collaborators successfully" : "Delete collaborators failed, please try again"
+                message = "Delete collaborators failed, please try again"
             };
         }
 
         [HttpGet("/presentation/getCollaborators"), Authorize]
         public ResponseMessage GetCollaborators(object presentationId)
         {
+            Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             JObject objTemp = JObject.Parse(presentationId.ToString());
             string presentId = (string)objTemp["presentationId"];
-        
-            try
+
+            bool checkPresentation = provider.Presentation.presentationExisted(Guid.Parse(presentId), userId);
+            if (checkPresentation)
             {
-                Guid id = Guid.Parse(presentId);
-            }
-            catch (Exception ex)
-            {
+                object collaborators = provider.Presentation.GetCollaborators(Guid.Parse(presentId));
                 return new ResponseMessage
                 {
-                    status = false,
-                    data = null,
-                    message = "Get presentation failed, presentation does not exist"
+                    status = collaborators is not null ? true : false,
+                    data = collaborators,
+                    message = collaborators is not null ? "Get collaborators successfully" : "Get collaborators failed, please try again"
                 };
             }
-
-            List<User> collaborators = provider.Presentation.GetCollaborators(Guid.Parse(presentId));
             return new ResponseMessage
             {
-                status = collaborators.Count > 0 ? true : false,
-                data = collaborators,
-                message = collaborators.Count > 0 ? "Get collaborators successfully" : "Get collaborators failed, please try again"
+                status = false,
+                data = null,
+                message = "Get collaborators failed, please try again"
             };
         }
     }
