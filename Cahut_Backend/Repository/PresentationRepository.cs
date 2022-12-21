@@ -162,5 +162,36 @@ namespace Cahut_Backend.Repository
                                 };
             return collaborators;
         }
+
+        public List<object> GetCollaboratorPresentation(Guid userId)
+        {
+            var res = from presentationDetail in context.PresentationDetail
+                      join presentation in context.Presentation
+                      on presentationDetail.PresentationId equals presentation.PresentationId 
+                      where presentationDetail.ColaboratorId == userId
+                      select new
+                      {
+                          presentationId = presentation.PresentationId,
+                          createdDate = presentation.CreatedDate,
+                          presentationName = presentation.PresentationName,
+                      };
+            List<object> result = new List<object>();
+            foreach (var item in res)
+            {
+                int NumOfSlides = 0;
+                NumOfSlides += context.MultipleChoiceSlide.Count(p => p.PresentationId == item.presentationId);
+                NumOfSlides += context.ParagraphSlide.Count(p => p.PresentationId == item.presentationId);
+                NumOfSlides += context.HeadingSlide.Count(p => p.PresentationId == item.presentationId);
+
+                result.Add(new
+                {
+                    presentationId = item.presentationId,
+                    createdDate = item.createdDate,
+                    presentationName = item.presentationName,
+                    numOfSlides = NumOfSlides
+                });
+            }
+            return result;
+        }
     }
 }

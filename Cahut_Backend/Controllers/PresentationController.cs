@@ -303,8 +303,6 @@ namespace Cahut_Backend.Controllers
         public ResponseMessage GetCollaborators(string presentationId)
         {
             Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            Console.WriteLine(presentationId);
-
             bool checkPresentation = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
             if (checkPresentation)
             {
@@ -321,6 +319,18 @@ namespace Cahut_Backend.Controllers
                 status = false,
                 data = null,
                 message = "Get collaborators failed, please try again"
+            };
+        }
+
+        [HttpGet("/presentation/getCollabPresentations")]
+        public ResponseMessage GetCollabPresentations()
+        {
+            Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            return new ResponseMessage
+            {
+                status = true,
+                data = provider.Presentation.GetCollaboratorPresentation(userId),
+                message = "Get collab presentations successfully"
             };
         }
     }
