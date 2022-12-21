@@ -181,6 +181,8 @@ namespace Cahut_Backend.Controllers
 
             List<string> exisedEmail = new List<string>();
 
+            bool addYourself = false;
+
             bool checkPresentation = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
             if (checkPresentation)
             {
@@ -188,16 +190,20 @@ namespace Cahut_Backend.Controllers
 
                 foreach (var email in emails)
                 {
-
-                    bool isAdded = provider.Presentation.AddCollaborators(Guid.Parse(presentationId), email);
-                    if (isAdded)
-                    {
-                        collabAdded++;
+                    Guid user = provider.User.GetUserIdByUserEmail(email);
+                    if (!user.Equals(userId))
+                    {   
+                        bool isAdded = provider.Presentation.AddCollaborators(Guid.Parse(presentationId), email);
+                        if (isAdded)
+                        {
+                            collabAdded++;
+                        }
+                        else
+                        {
+                            exisedEmail.Add(email);
+                        }
                     }
-                    else
-                    {
-                        exisedEmail.Add(email);
-                    }
+                    addYourself = true;
                 }
 
                 if (collabAdded == emails.Count)
@@ -209,25 +215,43 @@ namespace Cahut_Backend.Controllers
                         message = "Add collaborators successfully"
                     };
                 }
+                if (collabAdded != emails.Count && collabAdded > 0 )
+                {
+                    return new ResponseMessage
+                    {
+                        status = false,
+                        data = exisedEmail,
+                        message = "Some emails cannot be added"
+                    };
+                }
 
-                if(collabAdded != emails.Count && collabAdded > 0)
+                if (collabAdded != emails.Count && collabAdded > 0 && addYourself)
                 {
                     return new ResponseMessage
                     {
                         status = false,
                         data = exisedEmail,
-                        message = "Some emails cannnot be added"
+                        message = "Cannot add yourself as collaborators, other emails had been added"
                     };
                 }
-                else
+
+                if (addYourself)
                 {
                     return new ResponseMessage
                     {
                         status = false,
-                        data = exisedEmail,
-                        message = "Failed to add, all collaborators are added"
+                        data = null,
+                        message = "Cannot add your self as collaborator"
                     };
                 }
+
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = exisedEmail,
+                    message = "Failed to add, all collaborators are added"
+                };
+                
             }
                 
             
