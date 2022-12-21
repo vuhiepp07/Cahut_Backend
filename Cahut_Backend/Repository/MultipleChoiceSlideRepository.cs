@@ -14,6 +14,8 @@ namespace Cahut_Backend.Repository
             {
                 PresentationId = PresentationId,
                 SlideId = slideId,
+                IsCurrent = 0,
+                SlideType = "MultipleChoice",
                 DateCreated = DateTime.UtcNow.AddHours(7),
             };
             context.MultipleChoiceSlide.Add(slide);

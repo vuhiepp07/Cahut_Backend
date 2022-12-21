@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CahutBackend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20221218102852_InitDb")]
-    partial class InitDb
+    [Migration("20221221183321_CreateDb")]
+    partial class CreateDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -279,6 +279,9 @@ namespace CahutBackend.Migrations
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("IsCurrent")
+                        .HasColumnType("int");
+
                     b.Property<Guid>("PresentationId")
                         .HasColumnType("uniqueidentifier");
 
@@ -286,6 +289,10 @@ namespace CahutBackend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(0);
+
+                    b.Property<string>("SlideType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("SlideId");
 
@@ -325,7 +332,7 @@ namespace CahutBackend.Migrations
                     b.Property<DateTime>("RefreshTokenExpiredTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2022, 12, 18, 10, 28, 52, 820, DateTimeKind.Utc).AddTicks(3820));
+                        .HasDefaultValue(new DateTime(2022, 12, 21, 18, 33, 20, 995, DateTimeKind.Utc).AddTicks(983));
 
                     b.Property<string>("UserName")
                         .IsRequired()

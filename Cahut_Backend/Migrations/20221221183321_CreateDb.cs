@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CahutBackend.Migrations
 {
     /// <inheritdoc />
-    public partial class InitDb : Migration
+    public partial class CreateDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -49,7 +49,7 @@ namespace CahutBackend.Migrations
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     AccountStatus = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    RefreshTokenExpiredTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2022, 12, 18, 10, 28, 52, 820, DateTimeKind.Utc).AddTicks(3820))
+                    RefreshTokenExpiredTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2022, 12, 21, 18, 33, 20, 995, DateTimeKind.Utc).AddTicks(983))
                 },
                 constraints: table =>
                 {
@@ -153,6 +153,8 @@ namespace CahutBackend.Migrations
                 {
                     SlideId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     SlideOrder = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    SlideType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsCurrent = table.Column<int>(type: "int", nullable: false),
                     PresentationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
                     HeadingContent = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -175,6 +177,8 @@ namespace CahutBackend.Migrations
                 {
                     SlideId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     SlideOrder = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    SlideType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsCurrent = table.Column<int>(type: "int", nullable: false),
                     PresentationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
                     NumOfMultipleChoiceQuestion = table.Column<int>(type: "int", nullable: false)
@@ -196,6 +200,8 @@ namespace CahutBackend.Migrations
                 {
                     SlideId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     SlideOrder = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    SlideType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsCurrent = table.Column<int>(type: "int", nullable: false),
                     PresentationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ParagraphContent = table.Column<string>(type: "nvarchar(max)", nullable: false),

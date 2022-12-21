@@ -276,6 +276,9 @@ namespace CahutBackend.Migrations
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("IsCurrent")
+                        .HasColumnType("int");
+
                     b.Property<Guid>("PresentationId")
                         .HasColumnType("uniqueidentifier");
 
@@ -283,6 +286,10 @@ namespace CahutBackend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(0);
+
+                    b.Property<string>("SlideType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("SlideId");
 
@@ -322,7 +329,7 @@ namespace CahutBackend.Migrations
                     b.Property<DateTime>("RefreshTokenExpiredTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2022, 12, 18, 10, 28, 52, 820, DateTimeKind.Utc).AddTicks(3820));
+                        .HasDefaultValue(new DateTime(2022, 12, 21, 18, 33, 20, 995, DateTimeKind.Utc).AddTicks(983));
 
                     b.Property<string>("UserName")
                         .IsRequired()
