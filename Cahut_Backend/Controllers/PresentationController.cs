@@ -191,19 +191,20 @@ namespace Cahut_Backend.Controllers
                 foreach (var email in emails)
                 {
                     Guid user = provider.User.GetUserIdByUserEmail(email);
-                    if (!user.Equals(userId))
-                    {   
-                        bool isAdded = provider.Presentation.AddCollaborators(Guid.Parse(presentationId), email);
-                        if (isAdded)
-                        {
-                            collabAdded++;
-                        }
-                        else
-                        {
-                            exisedEmail.Add(email);
-                        }
+                    if (user.Equals(userId))
+                    {
+                        addYourself = true;
                     }
-                    addYourself = true;
+                    bool isAdded = provider.Presentation.AddCollaborators(Guid.Parse(presentationId), email);
+                    if (isAdded)
+                    {
+                        collabAdded++;
+                    }
+                    else
+                    {
+                        exisedEmail.Add(email);
+                    }
+                    
                 }
 
                 if (collabAdded == emails.Count)

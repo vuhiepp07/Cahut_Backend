@@ -112,11 +112,10 @@ namespace Cahut_Backend.Repository
             var res = context.User.Where(p => p.Email == email)
                                 .Select(p => p.UserId)
                                 .FirstOrDefault();
-            if (res == null)
+            if (res == Guid.Empty)
             {
                 return false;
             }
-
             bool isCollabExist = context.PresentationDetail.Any(c => c.PresentationId == presentationId && c.ColaboratorId == res);
             if (isCollabExist)
             {
@@ -192,6 +191,12 @@ namespace Cahut_Backend.Repository
                 });
             }
             return result;
+        }
+
+        public bool isCollaborator(Guid presentationId, Guid userId)
+        {
+            bool res = context.PresentationDetail.Any(p => p.PresentationId == presentationId && p.ColaboratorId == userId);
+            return res;
         }
     }
 }
