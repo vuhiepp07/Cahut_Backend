@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CahutBackend.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateDb : Migration
+    public partial class InitDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -49,7 +49,8 @@ namespace CahutBackend.Migrations
                     Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     AccountStatus = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    RefreshTokenExpiredTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2022, 12, 21, 18, 33, 20, 995, DateTimeKind.Utc).AddTicks(983))
+                    ResetPasswordString = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RefreshTokenExpiredTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2022, 12, 23, 15, 59, 47, 177, DateTimeKind.Utc).AddTicks(3351))
                 },
                 constraints: table =>
                 {
@@ -66,7 +67,8 @@ namespace CahutBackend.Migrations
                     NumOfMems = table.Column<int>(type: "int", nullable: false, defaultValue: 1),
                     JoinGrString = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     HasPresentationPresenting = table.Column<bool>(type: "bit", nullable: false),
-                    GroupName = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    GroupName = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    PresentationId = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {

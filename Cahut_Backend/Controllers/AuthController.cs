@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
@@ -45,7 +46,7 @@ namespace Cahut_Backend.Controllers
         [HttpPost("auth/register")]
         public ResponseMessage Register(RegisterModel obj)
         {
-            if(provider.User.CheckEmailExisted(obj.Email) == false)
+            if (provider.User.CheckEmailExisted(obj.Email) == false)
             {
                 int ret = provider.User.Register(obj);
                 if (ret > 0)
@@ -93,13 +94,13 @@ namespace Cahut_Backend.Controllers
                 data = null,
                 message = "Failed to register, email already existed"
             };
-            
+
         }
 
         [HttpGet("auth/activate/account/{UserId}")]
         public ResponseMessage ActivateAccount(string UserId)
         {
-            if(provider.User.CheckUserExist(Guid.Parse(UserId)) == false)
+            if (provider.User.CheckUserExist(Guid.Parse(UserId)) == false)
             {
                 return new ResponseMessage
                 {
@@ -118,12 +119,12 @@ namespace Cahut_Backend.Controllers
                     message = "Account activated, please login to proceed"
                 };
             }
-            else if(ret == -1)
+            else if (ret == -1)
             {
                 return new ResponseMessage
                 {
                     status = false,
-                    data = null,    
+                    data = null,
                     message = "Account already activated, please login"
                 };
             }
@@ -165,7 +166,7 @@ namespace Cahut_Backend.Controllers
             if (provider.User.CheckEmailExisted(email) == true)
             {
                 User usr = provider.User.LoginWithEmail(email);
-                if(usr.UserName != name || usr.Avatar != avatar)
+                if (usr.UserName != name || usr.Avatar != avatar)
                 {
                     provider.User.UpdateUserInfo(usr.UserId, new UserInfoModel { UserName = name });
                 }
@@ -180,7 +181,7 @@ namespace Cahut_Backend.Controllers
             else
             {
                 int registerResult = provider.User.RegisterWithGoogleInfo(email, name, avatar);
-                if(registerResult > 0)
+                if (registerResult > 0)
                 {
                     User usr = provider.User.LoginWithEmail(email);
                     Token token = SaveUserInfoAndCreateTokens(usr);
@@ -207,9 +208,9 @@ namespace Cahut_Backend.Controllers
         public ResponseMessage Login(LoginModel obj)
         {
             User usr = provider.User.Login(obj);
-            if(usr != null)
+            if (usr != null)
             {
-                if(usr.AccountStatus != 1)
+                if (usr.AccountStatus != 1)
                 {
                     return new ResponseMessage
                     {
@@ -242,7 +243,7 @@ namespace Cahut_Backend.Controllers
         {
             Guid UserId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             bool validatePassword = provider.User.ValidatePassword(UserId, obj.CurrentPassword);
-            if(validatePassword == true)
+            if (validatePassword == true)
             {
                 int result = provider.User.ChangePassword(UserId, obj.NewPassword);
                 return new ResponseMessage
@@ -268,35 +269,69 @@ namespace Cahut_Backend.Controllers
         }
 
         [HttpGet("auth/forgotpassword")]
-        public ResponseMessage ForgotPassword(string email)
+        public ResponseMessage SendMailResetPassword(string email)
         {
             bool emailExisted = provider.User.CheckEmailExisted(email);
             if (emailExisted)
             {
-                string newPassword = Helper.RandomString(8);
-                int resetPasswordResult = provider.User.ResetPassword(email, newPassword);
-                if(resetPasswordResult > 0)
+                string resetPSW = Helper.RandomString(32);
+                string bodyMsg = "<h2>Hello user, you just required to reset your password in our system, please follow the link in this mail to update your new password: </h2>";
+                bodyMsg += $"<h3>{Helper.TestingLink}/account/password/reset</h3>";
+                bodyMsg += $"<div><h3> Please use this reset password string to reset your password: {resetPSW}</h3></div>";
+                EmailMessage msg = new EmailMessage
                 {
-                    string bodyMsg = "<h2>Hello user, you just required to reset password in our system, hear is your new password: " + $"{newPassword}" +
-                ", please login and change your password once again for security purpose</h2>";
-                    EmailMessage msg = new EmailMessage
+                    EmailTo = email,
+                    Subject = "Account reset password email",
+                    Content = bodyMsg
+                };
+                EmailSender sender = provider.Email.GetMailSender();
+                string sendMailResult = Helper.SendEmails(sender, msg, _configuration);
+                if (sendMailResult == "Send mail success")
+                {
+                    provider.User.UpdateResetPasswordStr(email, resetPSW);
+                    provider.Email.increaseMailSent(sender.usr);
+                    return new ResponseMessage
                     {
-                        EmailTo = email,
-                        Subject = "Account reset password mail",
-                        Content = bodyMsg
+                        status = true,
+                        data = null,
+                        message = "Reset password email has been sent. Check your email and follow the instruction to update a new password"
                     };
-                    EmailSender sender = provider.Email.GetMailSender();
-                    string sendMailResult = Helper.SendEmails(sender, msg, _configuration);
-                    if (sendMailResult == "Send mail success")
+                }
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Send reset password email failed, please try again"
+                };
+            }
+            return new ResponseMessage
+            {
+                status = false,
+                data = null,
+                message = "Reset password failed, your email is not exist in ours system"
+            };
+        }
+
+        [HttpPost("auth/password/reset")]
+        public ResponseMessage ResetPassword(object ResetPasswordObj)
+        {
+            JObject objTemp = JObject.Parse(ResetPasswordObj.ToString());
+            string resetCode = (string)objTemp["resetCode"];
+            string newPassword = (string)objTemp["newPassword"];
+
+            string email = provider.User.GetUserEmailThroughResetPasswordCode(resetCode);
+            if(email is not null)
+            {
+                int resetPasswordResult = provider.User.ResetPassword(email, newPassword);
+                if (resetPasswordResult > 0)
+                {
+                    provider.User.UpdateResetPasswordStr(email, "");
+                    return new ResponseMessage
                     {
-                        provider.Email.increaseMailSent(sender.usr);
-                        return new ResponseMessage
-                        {
-                            status = true,
-                            data = null,
-                            message = "Reset password success, your new password has been sent to your registered email."
-                        };
-                    }
+                        status = true,
+                        data = null,
+                        message = "Reset password success, please login to proceed"
+                    };
                 }
                 return new ResponseMessage
                 {
@@ -309,7 +344,7 @@ namespace Cahut_Backend.Controllers
             {
                 status = false,
                 data = null,
-                message = "Reset password failed, your email is not exist in ours system"
+                message = "Reset password failed, reset password code does not exist"
             };
         }
     }

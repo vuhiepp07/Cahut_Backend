@@ -9,6 +9,18 @@ namespace Cahut_Backend.Repository
         {
 
         }
+        public int UpdateResetPasswordStr(string email, string resetPasswordString)
+        {
+            User usr = context.User.Where(p => p.Email == email).SingleOrDefault();
+            usr.ResetPasswordString = resetPasswordString;
+            return context.SaveChanges();
+        }
+
+        public string GetUserEmailThroughResetPasswordCode(string ResetPasswordCode)
+        {
+            string email = context.User.Where(p => p.ResetPasswordString == ResetPasswordCode).Select(p => p.Email).SingleOrDefault();
+            return email;
+        }
 
         public Guid GetUserIdByUserName(string UserName)
         {

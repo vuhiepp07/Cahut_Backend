@@ -121,6 +121,9 @@ namespace CahutBackend.Migrations
                     b.Property<Guid>("OwnerId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("PresentationId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("GroupId");
 
                     b.HasIndex("GroupName")
@@ -329,7 +332,10 @@ namespace CahutBackend.Migrations
                     b.Property<DateTime>("RefreshTokenExpiredTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2022, 12, 21, 18, 33, 20, 995, DateTimeKind.Utc).AddTicks(983));
+                        .HasDefaultValue(new DateTime(2022, 12, 23, 15, 59, 47, 177, DateTimeKind.Utc).AddTicks(3351));
+
+                    b.Property<string>("ResetPasswordString")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserName")
                         .IsRequired()

@@ -173,7 +173,6 @@ namespace Cahut_Backend.Controllers
             };
         }
 
-
         [HttpPost("group/invite/{grName}/{email}"), Authorize]
         public ResponseMessage InviteThroughMail(string grName, string email)
         {

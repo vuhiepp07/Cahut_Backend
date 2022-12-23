@@ -10,6 +10,7 @@
         public bool HasPresentationPresenting { get; set; }
         public string GroupName { get; set; }
         public List<GroupDetail> GroupDetails { get; set; }
+        public string PresentationId { get; set; }
         public User User { get; set; }
     }
 }

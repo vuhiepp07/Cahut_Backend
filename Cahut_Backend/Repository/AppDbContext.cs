@@ -55,6 +55,7 @@ namespace Cahut_Backend.Repository
                 entity.Property(p => p.RefreshToken).IsRequired(false);
                 entity.Property(p => p.RefreshTokenExpiredTime).HasDefaultValue(DateTime.UtcNow);
                 entity.Property(p => p.AccountStatus).HasDefaultValue(0);
+                entity.Property(p => p.ResetPasswordString).IsRequired(false);
             });
 
             builder.Entity<Role>(entity => {
@@ -73,6 +74,7 @@ namespace Cahut_Backend.Repository
                 entity.HasOne(p => p.User)
                         .WithMany(p => p.Group)
                         .HasForeignKey(p => p.OwnerId);
+                entity.Property(p => p.PresentationId).IsRequired(false);
             });
 
             builder.Entity<GroupDetail>(entity => {

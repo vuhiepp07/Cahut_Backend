@@ -10,6 +10,7 @@
         public string Phone { get; set; }
         public int AccountStatus { get; set; }
         public string RefreshToken { get; set; }
+        public string ResetPasswordString { get; set; }
         public DateTime RefreshTokenExpiredTime { get; set; }
         //public List<PresentationDetail> PresentationDetails { get; set; }
         public List<Group> Group { get; set; }
