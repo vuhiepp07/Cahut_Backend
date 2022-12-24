@@ -276,8 +276,7 @@ namespace Cahut_Backend.Controllers
             {
                 string resetPSW = Helper.RandomString(32);
                 string bodyMsg = "<h2>Hello user, you just required to reset your password in our system, please follow the link in this mail to update your new password: </h2>";
-                bodyMsg += $"<h3>{Helper.TestingLink}/account/password/reset</h3>";
-                bodyMsg += $"<div><h3> Please use this reset password string to reset your password: {resetPSW}</h3></div>";
+                bodyMsg += $"<h3>{Helper.TestingLink}/change-password/{resetPSW}</h3>";
                 EmailMessage msg = new EmailMessage
                 {
                     EmailTo = email,
@@ -346,6 +345,30 @@ namespace Cahut_Backend.Controllers
                 data = null,
                 message = "Reset password failed, reset password code does not exist"
             };
+        }
+
+        [HttpGet("auth/checkResetCode")]
+        public ResponseMessage CheckResetCode (string resetCode)
+        {
+            bool codeExisted = provider.User.CheckResetCodeExisted(resetCode);
+            if (codeExisted)
+            {
+                return new ResponseMessage 
+                { 
+                    status = true,
+                    data = null,
+                    message = "Reset code is valid"
+                };
+            }
+            else
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Reset code is invalid"
+                };
+            }
         }
     }
 }

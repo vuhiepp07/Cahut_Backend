@@ -196,5 +196,11 @@ namespace Cahut_Backend.Repository
             context.User.Add(usr);
             return context.SaveChanges();
         }
+
+        public bool CheckResetCodeExisted(string code)
+        {
+            bool existed = context.User.Any(p => p.ResetPasswordString == code);
+            return existed;
+        }
     }
 }
