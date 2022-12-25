@@ -166,6 +166,33 @@ namespace Cahut_Backend.Controllers
             };
         }
 
+        [HttpGet("/presentation/info")]
+        public ResponseMessage GetPresentationInfo(string presentationId)
+        {
+            Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            bool isCollab = provider.Presentation.isCollaborator(Guid.Parse(presentationId), userId);
+            bool isOwner = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
+            if(isCollab || isOwner)
+            {
+                return new ResponseMessage
+                {
+                    status = true,
+                    data = new
+                    {
+                        Role = isCollab ? "Collaborator" : "Owner",
+                        PresentatingType = provider.Presentation.GetPresentationType(Guid.Parse(presentationId)),
+                        IsBeingPresented = provider.Presentation.isPresentating(Guid.Parse(presentationId)),
+                    },
+                    message = "Get presentation info successfully"
+                };
+            }
+            return new ResponseMessage
+            {
+                status = false,
+                data = null,
+                message = "Only owner and collaborators can get presentation info"
+            };
+        }
 
         [HttpPost("/presentation/addCollaborators"), Authorize]
         public ResponseMessage AddCollaborator(object addCollaboratorModel)
@@ -256,10 +283,7 @@ namespace Cahut_Backend.Controllers
                     message = "Failed to add"
                 };
                 
-            }
-                
-            
-            
+            }      
 
             return new ResponseMessage
             {
@@ -449,78 +473,210 @@ namespace Cahut_Backend.Controllers
             };
         }
 
-        [HttpGet("/presentation/getCurrentSlide")]
+        [HttpGet("/presentation/public/currentSlide")]
         public ResponseMessage GetCurrentSlide(string presentationId)
         {
+            string presentType = provider.Presentation.GetPresentationType(Guid.Parse(presentationId));
+            if(presentType == "public")
+            {
+                if (provider.Presentation.isPresentating(Guid.Parse(presentationId)))
+                {
+                    return new ResponseMessage
+                    {
+                        status = true,
+                        data = provider.Presentation.GetCurrentSlide(Guid.Parse(presentationId)),
+                        message = "Get current slide successfully"
+                    };
+                }
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Presentation is not presented"
+                };
+            }
             return new ResponseMessage
             {
-                status = true,
-                data = provider.Presentation.GetCurrentSlide(Guid.Parse(presentationId)),
-                message = "Get current slide successfully"
+                status = false,
+                data = null,
+                message = "Presentation is not presented in public"
+            };
+        }
+
+        [HttpGet("/presentation/group/currentSlide"), Authorize]
+        public ResponseMessage GetCurrentGroupSlide(string presentationId, string groupId)
+        {
+            Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            bool isPresenting = provider.Presentation.isPresentating(Guid.Parse(presentationId));
+            if (isPresenting)
+            {
+                bool isJoinedGroup = provider.Group.AlreadyJoinedGroup(userId, Guid.Parse(groupId));
+                bool isOwner = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
+                if(isOwner || isJoinedGroup)
+                {
+                    return new ResponseMessage
+                    {
+                        status = true,
+                        data = provider.Presentation.GetCurrentSlide(Guid.Parse(presentationId)),
+                        message = "Get current slide successfully"
+                    };
+                }
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Only group member can view presentation"
+                };
+            }
+            return new ResponseMessage
+            {
+                status = false,
+                data = null,
+                message = "Presentation is not being presented"
             };
         }
 
         [HttpGet("/presentation/getNextSlide"), Authorize]
-        public ResponseMessage GetNextSlide(string presentationId)
+        public ResponseMessage GetNextSlide(string presentationId, string groupId)
         {
+            string presentationType = provider.Presentation.GetPresentationType(Guid.Parse(presentationId));
             Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             bool isOwner = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
-            if (isOwner)
+            if (presentationType == "public")
             {
-                if (!provider.Presentation.isPresentating(Guid.Parse(presentationId)))
+                if (isOwner)
                 {
+                    if (!provider.Presentation.isPresentating(Guid.Parse(presentationId)))
+                    {
+                        return new ResponseMessage
+                        {
+                            status = false,
+                            data = null,
+                            message = "Presentation is not presented"
+                        };
+                    }
+                    object nextSlide = provider.Presentation.GetNextSlide(Guid.Parse(presentationId));
                     return new ResponseMessage
                     {
-                        status = false,
-                        data = null,
-                        message = "Presentation is not presented"
+                        status = true,
+                        data = nextSlide,
+                        message = nextSlide != null ? "Get next slide successfully" : "Has reached end of presentation"
                     };
                 }
-                object nextSlide = provider.Presentation.GetNextSlide(Guid.Parse(presentationId));
                 return new ResponseMessage
                 {
-                    status = true,
-                    data = nextSlide,
-                    message = nextSlide != null ? "Get next slide successfully" : "Has reached end of presentation"
+                    status = false,
+                    data = null,
+                    message = "Only presentation onwner can get next slide"
+                };
+            }
+            if(presentationType == "group")
+            {
+                string userRole = provider.Group.GetMemberRoleInGroup(userId, Guid.Parse(groupId));
+                bool isJoinedGroup = provider.Group.AlreadyJoinedGroup(userId, Guid.Parse(groupId));
+                if (isOwner && isJoinedGroup && (userRole == "Co-owner" || userRole == "Owner"))
+                {
+                    if (!provider.Presentation.isPresentating(Guid.Parse(presentationId)))
+                    {
+                        return new ResponseMessage
+                        {
+                            status = false,
+                            data = null,
+                            message = "Presentation is not presented"
+                        };
+                    }
+                    object nextSlide = provider.Presentation.GetNextSlide(Guid.Parse(presentationId));
+                    return new ResponseMessage
+                    {
+                        status = true,
+                        data = nextSlide,
+                        message = nextSlide != null ? "Get next slide successfully" : "Has reached end of presentation"
+                    };
+                }
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Only presentation onwner, co-owner can get next slide"
                 };
             }
             return new ResponseMessage
             {
                 status = false,
                 data = null,
-                message = "Only presentation onwner can get next slide"
+                message = "Invalid presentation type"
             };
         }
 
         [HttpGet("/presentation/getPrevSlide"), Authorize]
-        public ResponseMessage GetPrevSlide(string presentationId)
+        public ResponseMessage GetPrevSlide(string presentationId, string groupId)
         {
             Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            string presentationType = provider.Presentation.GetPresentationType(Guid.Parse(presentationId));
             bool isOwner = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
-            if (isOwner)
-            {
-                if (!provider.Presentation.isPresentating(Guid.Parse(presentationId)))
+            if (presentationType == "public")
+            { 
+                if (isOwner)
                 {
+                    if (!provider.Presentation.isPresentating(Guid.Parse(presentationId)))
+                    {
+                        return new ResponseMessage
+                        {
+                            status = false,
+                            data = null,
+                            message = "Presentation is not presented"
+                        };
+                    }
+                    object prevSlide = provider.Presentation.GetPrevSlide(Guid.Parse(presentationId));
                     return new ResponseMessage
                     {
-                        status = false,
-                        data = null,
-                        message = "Presentation is not presented"
+                        status = true,
+                        data = prevSlide,
+                        message = prevSlide != null ? "Get next slide successfully" : "Has meet start of presentation"
                     };
                 }
-                object prevSlide = provider.Presentation.GetPrevSlide(Guid.Parse(presentationId));
                 return new ResponseMessage
                 {
-                    status = true,
-                    data = prevSlide,
-                    message = prevSlide != null ? "Get next slide successfully" : "Has meet start of presentation"
+                    status = false,
+                    data = null,
+                    message = "Only presentation onwner can get previous slide"
+                };
+            }
+            if(presentationType == "group")
+            {
+                string userRole = provider.Group.GetMemberRoleInGroup(userId, Guid.Parse(groupId));
+                bool isJoinedGroup = provider.Group.AlreadyJoinedGroup(userId, Guid.Parse(groupId));
+                if (isOwner && isJoinedGroup && (userRole == "Co-owner" || userRole == "Owner"))
+                {
+                    if (!provider.Presentation.isPresentating(Guid.Parse(presentationId)))
+                    {
+                        return new ResponseMessage
+                        {
+                            status = false,
+                            data = null,
+                            message = "Presentation is not presented"
+                        };
+                    }
+                    object prevSlide = provider.Presentation.GetPrevSlide(Guid.Parse(presentationId));
+                    return new ResponseMessage
+                    {
+                        status = true,
+                        data = prevSlide,
+                        message = prevSlide != null ? "Get next slide successfully" : "Has meet start of presentation"
+                    };
+                }
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Only presentation onwner or co-owner can get previous slide"
                 };
             }
             return new ResponseMessage
             {
                 status = false,
                 data = null,
-                message = "Only presentation onwner can get previous slide"
+                message = "Invalid presentation type"
             };
         }
     }

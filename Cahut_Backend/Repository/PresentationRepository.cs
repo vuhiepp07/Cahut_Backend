@@ -225,6 +225,7 @@ namespace Cahut_Backend.Repository
             present.PresentationType = "group";
             Group presentGroup = context.Group.Find(groupId);
             presentGroup.PresentationId = presentationId.ToString();
+            presentGroup.HasPresentationPresenting = true;
             //get slides list and set first slide as current slide
             List<MultipleChoiceSlide> multipleChoiceSlides = context.MultipleChoiceSlide.Where(p => p.PresentationId == presentationId).ToList<MultipleChoiceSlide>();
             List<ParagraphSlide> paragraphSlides = context.ParagraphSlide.Where(p => p.PresentationId == presentationId).ToList<ParagraphSlide>();
@@ -254,6 +255,7 @@ namespace Cahut_Backend.Repository
             if(presetatingGroup != null)
             {
                 presetatingGroup.PresentationId = null;
+                presetatingGroup.HasPresentationPresenting = false;
             }
 
             return context.SaveChanges();
@@ -374,6 +376,7 @@ namespace Cahut_Backend.Repository
 
         public object GetNextSlide(Guid presentationId)
         {
+
             var currentSlideId = GetCurrentSlide(presentationId).SlideId;
             Slide currentSlide = context.Slide.Find(currentSlideId);
 
@@ -439,6 +442,12 @@ namespace Cahut_Backend.Repository
                 }
             }
             return null;
+        }
+
+        public string GetPresentationType(Guid presentationId)
+        {
+            Presentation presentation = context.Presentation.Find(presentationId);
+            return presentation.PresentationType;
         }
     }
 }
