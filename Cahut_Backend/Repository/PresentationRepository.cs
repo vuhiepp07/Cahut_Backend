@@ -198,5 +198,247 @@ namespace Cahut_Backend.Repository
             bool res = context.PresentationDetail.Any(p => p.PresentationId == presentationId && p.ColaboratorId == userId);
             return res;
         }
+
+        public int StartPublicPresentation(Guid presentationId)
+        {
+            Presentation present = context.Presentation.Find(presentationId);
+            present.IsBeingPresented = true;
+            present.PresentationType = "public";
+            //get slides list and set first slide as current slide
+            List<MultipleChoiceSlide> multipleChoiceSlides = context.MultipleChoiceSlide.Where(p => p.PresentationId == presentationId).ToList<MultipleChoiceSlide>();
+            List<ParagraphSlide> paragraphSlides = context.ParagraphSlide.Where(p => p.PresentationId == presentationId).ToList<ParagraphSlide>();
+            List<HeadingSlide> headingSLides = context.HeadingSlide.Where(p => p.PresentationId == presentationId).ToList<HeadingSlide>();
+            List<Slide> slideList = new List<Slide>();
+            slideList.AddRange(multipleChoiceSlides);
+            slideList.AddRange(paragraphSlides);
+            slideList.AddRange(headingSLides);
+            slideList.OrderBy(p => p.DateCreated);
+            var firstSlide = slideList.First();
+            firstSlide.IsCurrent = 1;
+            return context.SaveChanges();
+        }
+
+        public int StartGroupPresentation(Guid presentationId, Guid groupId)
+        {
+            Presentation present = context.Presentation.Find(presentationId);
+            present.IsBeingPresented = true;
+            present.PresentationType = "group";
+            Group presentGroup = context.Group.Find(groupId);
+            presentGroup.PresentationId = presentationId.ToString();
+            //get slides list and set first slide as current slide
+            List<MultipleChoiceSlide> multipleChoiceSlides = context.MultipleChoiceSlide.Where(p => p.PresentationId == presentationId).ToList<MultipleChoiceSlide>();
+            List<ParagraphSlide> paragraphSlides = context.ParagraphSlide.Where(p => p.PresentationId == presentationId).ToList<ParagraphSlide>();
+            List<HeadingSlide> headingSLides = context.HeadingSlide.Where(p => p.PresentationId == presentationId).ToList<HeadingSlide>();
+            List<Slide> slideList = new List<Slide>();
+            slideList.AddRange(multipleChoiceSlides);
+            slideList.AddRange(paragraphSlides);
+            slideList.AddRange(headingSLides);
+
+            var totalSlidesSorted = slideList.OrderBy(p => p.DateCreated);
+
+            var firstSlide = totalSlidesSorted.First();
+            firstSlide.IsCurrent = 1;
+            return context.SaveChanges();
+        }
+
+        public int EndPresentation(Guid presentationId)
+        {
+            Presentation present = context.Presentation.Find(presentationId);
+            present.IsBeingPresented = false;
+            present.PresentationType = null;
+            var currentSlideId = GetCurrentSlide(presentationId).SlideId;
+            Slide currentSlide = context.Slide.Find(currentSlideId);
+            currentSlide.IsCurrent = 0;
+
+            Group presetatingGroup = context.Group.Where(group => group.PresentationId == presentationId.ToString()).FirstOrDefault();
+            if(presetatingGroup != null)
+            {
+                presetatingGroup.PresentationId = null;
+            }
+
+            return context.SaveChanges();
+        }
+
+        public bool isPresentating(Guid presentationId)
+        {
+            return context.Presentation.Find(presentationId).IsBeingPresented;
+        }
+
+        public int EndGroupPresentation(Guid presentationId, Guid groupId)
+        {
+            Presentation present = context.Presentation.Find(presentationId);
+            present.IsBeingPresented = false;
+            present.PresentationType = null;
+
+            Group presentatingGroup = context.Group.Find(groupId);
+            presentatingGroup.PresentationId = null;
+
+            var currentSlide = GetCurrentSlide(presentationId);
+            currentSlide.IsCurrent = 0;
+
+            return context.SaveChanges();
+        }
+
+        public Slide GetCurrentSlide(Guid presentationId)
+        {
+            string currentMultipleChoiceSlide = context.MultipleChoiceSlide.Where(p => p.PresentationId == presentationId && p.IsCurrent == 1)
+                                                                  .Select(p => p.SlideId)
+                                                                  .FirstOrDefault();
+            if(currentMultipleChoiceSlide != null)
+            {
+                return new MultipleChoiceSlide
+                {
+                    SlideId = currentMultipleChoiceSlide,
+                    SlideType = "multipleChoice"
+                };
+            }
+
+            string currentParagraphChoiceSlide = context.ParagraphSlide.Where(p => p.PresentationId == presentationId && p.IsCurrent == 1)
+                                                                 .Select(p => p.SlideId)
+                                                                 .FirstOrDefault();
+            if (currentParagraphChoiceSlide != null)
+            {
+                return new ParagraphSlide
+                {
+                    SlideId = currentParagraphChoiceSlide,
+                    SlideType = "paragraph"
+                };
+            }
+
+            string currentHeadingChoiceSlide = context.HeadingSlide.Where(p => p.PresentationId == presentationId && p.IsCurrent == 1)
+                                                                 .Select(p => p.SlideId)
+                                                                 .FirstOrDefault();
+            if (currentHeadingChoiceSlide != null)
+            {
+                return new HeadingSlide
+                {
+                    SlideId = currentHeadingChoiceSlide,
+                    SlideType = "heading"
+                };
+            }
+            return null;
+        }
+
+        public int HandleChangeSlide(string slideId, string slideType)
+        {
+            if (slideType == "MultipleChoice")
+            {
+                MultipleChoiceSlide multipleChoiceSlide = context.MultipleChoiceSlide.Find(slideId);
+                multipleChoiceSlide.IsCurrent = 1;
+                return context.SaveChanges();
+            }
+            if (slideType == "Heading")
+            {
+                HeadingSlide headingSlide = context.HeadingSlide.Find(slideId);
+                headingSlide.IsCurrent = 1;
+                return context.SaveChanges();
+            }
+            if (slideType == "Paragraph")
+            {
+                ParagraphSlide paragraphSlide = context.ParagraphSlide.Find(slideId);
+                paragraphSlide.IsCurrent = 1;
+                return context.SaveChanges();
+            }
+            return 0;
+        }
+
+
+        public object HandleReturnSLide(string slideId, string slideType)
+        {
+            if (slideType == "MultipleChoice")
+            {
+                return new MultipleChoiceSlide
+                {
+                    SlideId = slideId,
+                    SlideType = slideType,
+                };
+            }
+            if (slideType == "Heading")
+            {
+                return new HeadingSlide
+                {
+                    SlideId = slideId,
+                    SlideType = slideType,
+                };
+            }
+            if (slideType == "Paragraph")
+            {
+                return new ParagraphSlide
+                {
+                    SlideId = slideId,
+                    SlideType = slideType,
+                };
+            }
+            return null;
+        }
+
+        public object GetNextSlide(Guid presentationId)
+        {
+            var currentSlideId = GetCurrentSlide(presentationId).SlideId;
+            Slide currentSlide = context.Slide.Find(currentSlideId);
+
+            //get slides list and set first slide as current slide
+            List<MultipleChoiceSlide> multipleChoiceSlides = context.MultipleChoiceSlide.Where(p => p.PresentationId == presentationId).ToList<MultipleChoiceSlide>();
+            List<ParagraphSlide> paragraphSlides = context.ParagraphSlide.Where(p => p.PresentationId == presentationId).ToList<ParagraphSlide>();
+            List<HeadingSlide> headingSLides = context.HeadingSlide.Where(p => p.PresentationId == presentationId).ToList<HeadingSlide>();
+            List<Slide> slideList = new List<Slide>();
+            slideList.AddRange(multipleChoiceSlides);
+            slideList.AddRange(paragraphSlides);
+            slideList.AddRange(headingSLides);
+            slideList.OrderBy(p => p.DateCreated);
+
+            var totalSlidesSorted = slideList.OrderBy(p => p.DateCreated).ToList();
+
+            int slidesCount = totalSlidesSorted.Count;
+            for(int i = 0; i < slidesCount; i++)
+            {
+                Slide slide = totalSlidesSorted[i];
+                if(slide.SlideId == currentSlideId)
+                {
+                    currentSlide.IsCurrent = 0;
+                    if(i + 1 < slidesCount)
+                    {
+                        HandleChangeSlide(totalSlidesSorted[i + 1].SlideId, totalSlidesSorted[i + 1].SlideType);
+                        return HandleReturnSLide(totalSlidesSorted[i + 1].SlideId, totalSlidesSorted[i + 1].SlideType);
+                    }
+                }
+            }
+            return null;
+        }
+
+
+        public object GetPrevSlide(Guid presentationId)
+        {
+            var currentSlideId = GetCurrentSlide(presentationId).SlideId;
+            Slide currentSlide = context.Slide.Find(currentSlideId);
+
+            //get slides list and set first slide as current slide
+            List<MultipleChoiceSlide> multipleChoiceSlides = context.MultipleChoiceSlide.Where(p => p.PresentationId == presentationId).ToList<MultipleChoiceSlide>();
+            List<ParagraphSlide> paragraphSlides = context.ParagraphSlide.Where(p => p.PresentationId == presentationId).ToList<ParagraphSlide>();
+            List<HeadingSlide> headingSLides = context.HeadingSlide.Where(p => p.PresentationId == presentationId).ToList<HeadingSlide>();
+            List<Slide> slideList = new List<Slide>();
+            slideList.AddRange(multipleChoiceSlides);
+            slideList.AddRange(paragraphSlides);
+            slideList.AddRange(headingSLides);
+            slideList.OrderBy(p => p.DateCreated);
+
+            var totalSlidesSorted = slideList.OrderBy(p => p.DateCreated).ToList();
+
+            int slidesCount = totalSlidesSorted.Count;
+            for (int i = 0; i < slidesCount; i++)
+            {
+                Slide slide = totalSlidesSorted[i];
+                if (slide.SlideId == currentSlideId)
+                {
+                    currentSlide.IsCurrent = 0;
+                    if (i - 1 > -1)
+                    {
+                        HandleChangeSlide(totalSlidesSorted[i - 1].SlideId, totalSlidesSorted[i - 1].SlideType);
+                        return HandleReturnSLide(totalSlidesSorted[i - 1].SlideId, totalSlidesSorted[i - 1].SlideType);
+                    }
+                }
+            }
+            return null;
+        }
     }
 }

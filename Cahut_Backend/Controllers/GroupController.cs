@@ -397,6 +397,41 @@ namespace Cahut_Backend.Controllers
                 message = "Delete group failed, group does not exist",
             };
         }
+
+        [HttpGet("group/getPresentation"), Authorize]
+        public ResponseMessage GetPresentationInGroup(string groupId)
+        {
+            Group group = provider.Group.GetGroupById(Guid.Parse(groupId));
+            if (group is not null)
+            {
+                Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                
+                if (provider.Group.AlreadyJoinedGroup(userId, Guid.Parse(groupId)))
+                {
+                    string presentation = provider.Group.GetPresentationInGroup(Guid.Parse(groupId));
+                    string role = provider.Group.GetMemberRoleInGroup(userId, group.GroupId);
+
+                    return new ResponseMessage
+                    {
+                        status = false,
+                        data = presentation is not null ? role + " " + presentation : null,
+                        message = presentation is not null ?  "Get presentation in group successfully" : "Group dont have presentation now"
+                    };
+                }
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "You are not in this group"
+                };
+            }
+            return new ResponseMessage
+            {
+                status = false,
+                data = null,
+                message = "Get presentation failed, group does not exist",
+            };
+        }
     }
 }
 

@@ -198,5 +198,11 @@ namespace Cahut_Backend.Repository
             context.Remove(group);
             return context.SaveChanges();
         }
+
+        public string GetPresentationInGroup(Guid groupId)
+        {
+            Group group = context.Group.Find(groupId);
+            return group.PresentationId;
+        }
     }
 }
