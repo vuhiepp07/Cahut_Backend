@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 
 namespace Cahut_Backend.Controllers
 {
@@ -182,6 +183,7 @@ namespace Cahut_Backend.Controllers
                         Role = isCollab ? "Collaborator" : "Owner",
                         PresentatingType = provider.Presentation.GetPresentationType(Guid.Parse(presentationId)),
                         IsBeingPresented = provider.Presentation.isPresentating(Guid.Parse(presentationId)),
+                        presentationName = provider.Presentation.GetPresentationName(Guid.Parse(presentationId))
                     },
                     message = "Get presentation info successfully"
                 };
@@ -678,6 +680,119 @@ namespace Cahut_Backend.Controllers
                 data = null,
                 message = "Invalid presentation type"
             };
+        }
+
+        [HttpGet("/presentation/present/info"), Authorize]
+        public ResponseMessage GetPresentationInfoTeacher(string presentationId)
+        {
+            Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            if (provider.Presentation.isPresentating(Guid.Parse(presentationId)))
+            {
+                string presentationType = provider.Presentation.GetPresentationType(Guid.Parse(presentationId));
+                if (presentationType == "public")
+                {
+                    bool isOwner = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
+                    if (isOwner)
+                    {
+
+                        return new ResponseMessage
+                        {
+                            status = true,
+                            data = new
+                            {
+                                presentationType = presentationType,
+                                groupId = "null"
+                            },
+                            message = "Get presentation info successfully"
+                        };
+                    }
+                }
+                else if (presentationType == "group")
+                {
+                    Guid groupId = provider.Group.GetGroupByPresentationId(presentationId);
+                    bool isTeacher = provider.Group.IsOwnerOrCoowner(userId, groupId);
+                    if (isTeacher)
+                    {
+                        return new ResponseMessage
+                        {
+                            status = true,
+                            data = new
+                            {
+                                presentationType = presentationType,
+                                groupId = groupId
+                            },
+                            message = "Get presentation info successfully"
+                        };
+                    }
+                }
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "You don't have permission to access"
+                };
+            }
+            else
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Presentation is not being presented"
+                };
+            }
+        }
+
+        [HttpGet("/presentation/group/view/info"), Authorize]
+        public ResponseMessage GetGroupPresentationInfoStudent(string presentationId, string groupId)
+        {
+            Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            bool isMember = provider.Group.isMember(userId, Guid.Parse(groupId));
+            if (isMember)
+            {
+                return new ResponseMessage
+                {
+                    status = true,
+                    data = null,
+                    message = "You have permission to access the presentation"
+                };
+            }
+            return new ResponseMessage
+            {
+                status = false,
+                data = null,
+                message = "You don't have permission to access"
+            };
+        }
+
+        [HttpGet("/presentation/getType")]
+        public ResponseMessage GetPresentationType(string presentationId)
+        {
+            bool isBeingPresented = provider.Presentation.isPresentating(Guid.Parse(presentationId));
+            if (isBeingPresented)
+            {
+                string presentationType = provider.Presentation.GetPresentationType(Guid.Parse(presentationId));
+                string groupId = presentationType == "group" ? provider.Group.GetGroupByPresentationId(presentationId).ToString() : "null";
+                return new ResponseMessage
+                {
+                    status = true,
+                    data = new
+                    {
+                        presentationType = presentationType,
+                        groupId = groupId
+                    },
+                    message = "Get presentation type successfully"
+                };
+            }
+            else
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Presentation is not being presented"
+                };
+            }
         }
     }
 }

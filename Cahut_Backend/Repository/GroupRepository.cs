@@ -204,5 +204,21 @@ namespace Cahut_Backend.Repository
             Group group = context.Group.Find(groupId);
             return group.PresentationId;
         }
+
+        public Guid GetGroupByPresentationId(string presentationId)
+        {
+            Group group = context.Group.Where(p => p.PresentationId == presentationId).SingleOrDefault();
+            return group.GroupId;
+        }
+
+        public bool IsOwnerOrCoowner(Guid userId, Guid groupId)
+        {
+            return context.GroupDetail.Any(p => p.GroupId == groupId && p.MemberId == userId && (p.RoleId == 1 || p.RoleId == 2));
+        }
+
+        public bool isMember(Guid userId, Guid groupId)
+        {
+            return context.GroupDetail.Any(p => p.GroupId == groupId && p.MemberId == userId);
+        }
     }
 }
