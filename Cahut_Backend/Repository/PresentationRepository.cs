@@ -213,8 +213,12 @@ namespace Cahut_Backend.Repository
             slideList.AddRange(paragraphSlides);
             slideList.AddRange(headingSLides);
             slideList.OrderBy(p => p.DateCreated);
-            var firstSlide = slideList.First();
-            firstSlide.IsCurrent = 1;
+            if(slideList.Count > 0)
+            {
+                var firstSlide = slideList.First();
+                firstSlide.IsCurrent = 1;
+                return context.SaveChanges();
+            }
             return context.SaveChanges();
         }
 
@@ -247,18 +251,24 @@ namespace Cahut_Backend.Repository
             Presentation present = context.Presentation.Find(presentationId);
             present.IsBeingPresented = false;
             present.PresentationType = null;
-            var currentSlideId = GetCurrentSlide(presentationId).SlideId;
-            Slide currentSlide = context.Slide.Find(currentSlideId);
-            currentSlide.IsCurrent = 0;
-
-            Group presetatingGroup = context.Group.Where(group => group.PresentationId == presentationId.ToString()).FirstOrDefault();
-            if(presetatingGroup != null)
+            
+            Slide currentSlide = GetCurrentSlide(presentationId);
+            if(currentSlide is not null)
             {
-                presetatingGroup.PresentationId = null;
-                presetatingGroup.HasPresentationPresenting = false;
-            }
+                string currentSlideId = currentSlide.SlideId;
+                Slide slide = context.Slide.Find(currentSlideId);
+                slide.IsCurrent = 0;
+                Group presetatingGroup = context.Group.Where(group => group.PresentationId == presentationId.ToString()).FirstOrDefault();
+                if (presetatingGroup != null)
+                {
+                    presetatingGroup.PresentationId = null;
+                    presetatingGroup.HasPresentationPresenting = false;
+                }
 
+                return context.SaveChanges();
+            }
             return context.SaveChanges();
+
         }
 
         public bool isPresentating(Guid presentationId)
@@ -448,6 +458,14 @@ namespace Cahut_Backend.Repository
         {
             Presentation presentation = context.Presentation.Find(presentationId);
             return presentation.PresentationType;
+        }
+
+        public Guid GetPresentGroup(Guid presentationId)
+        {
+            string presentId = presentationId.ToString();
+            Guid groupId = context.Group.Where(g => g.HasPresentationPresenting == true && g.PresentationId == presentId)
+                                        .Select(g => g.GroupId).FirstOrDefault();
+            return groupId;
         }
     }
 }

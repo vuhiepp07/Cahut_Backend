@@ -15,9 +15,11 @@ namespace Cahut_Backend.Controllers
         [HttpGet("/presentation/getslides")]
         public ResponseMessage GetPresentationSlide(string presentationId)
         {
+
             Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             bool isExisted = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
-            if (isExisted)
+            bool isCollab = provider.Presentation.isCollaborator(Guid.Parse(presentationId), userId);
+            if (isExisted || isCollab)
             {
                 List<object> res = provider.Presentation.GetPresentationSlides(Guid.Parse(presentationId));
                 return new ResponseMessage
@@ -183,7 +185,8 @@ namespace Cahut_Backend.Controllers
                         Role = isCollab ? "Collaborator" : "Owner",
                         PresentatingType = provider.Presentation.GetPresentationType(Guid.Parse(presentationId)),
                         IsBeingPresented = provider.Presentation.isPresentating(Guid.Parse(presentationId)),
-                        presentationName = provider.Presentation.GetPresentationName(Guid.Parse(presentationId))
+                        presentationName = provider.Presentation.GetPresentationName(Guid.Parse(presentationId)),
+                        GroupId = provider.Presentation.GetPresentGroup(Guid.Parse(presentationId)),
                     },
                     message = "Get presentation info successfully"
                 };
@@ -365,10 +368,11 @@ namespace Cahut_Backend.Controllers
         }
 
         [HttpGet("/presentation/groupPresent")]
-        public ResponseMessage GroupPresent(string presentationId, string groupId)
+        public ResponseMessage GroupPresent(string presentationId, string groupName)
         {
+            Guid groupId = provider.Group.GetGroupByName(groupName).GroupId;
             Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            if (!provider.Group.AlreadyJoinedGroup(userId, Guid.Parse(groupId))){
+            if (!provider.Group.AlreadyJoinedGroup(userId, groupId)){
                 return new ResponseMessage
                 {
                     status = false,
@@ -390,7 +394,7 @@ namespace Cahut_Backend.Controllers
                     };
                 }
 
-                int isPresent = provider.Presentation.StartGroupPresentation(Guid.Parse(presentationId), Guid.Parse(groupId));
+                int isPresent = provider.Presentation.StartGroupPresentation(Guid.Parse(presentationId), groupId);
                 return new ResponseMessage
                 {
                     status = true,
@@ -461,9 +465,9 @@ namespace Cahut_Backend.Controllers
                 int isEnd = provider.Presentation.EndPresentation(Guid.Parse(presentationId));
                 return new ResponseMessage
                 {
-                    status = true,
+                    status = isEnd > 0 ? true : false,
                     data = null,
-                    message = "End a presentation"
+                    message = isEnd > 0 ? "End a presentation":"Failed to end presentation"
                 };
             }
 
@@ -483,10 +487,15 @@ namespace Cahut_Backend.Controllers
             {
                 if (provider.Presentation.isPresentating(Guid.Parse(presentationId)))
                 {
+                    Slide currentSlide = provider.Presentation.GetCurrentSlide(Guid.Parse(presentationId));
                     return new ResponseMessage
                     {
                         status = true,
-                        data = provider.Presentation.GetCurrentSlide(Guid.Parse(presentationId)),
+                        data = new
+                        {
+                            slideId = currentSlide is not null ? currentSlide.SlideId : null,
+                            slideType = currentSlide is not null ? currentSlide.SlideType: null,
+                        },
                         message = "Get current slide successfully"
                     };
                 }
@@ -516,10 +525,15 @@ namespace Cahut_Backend.Controllers
                 bool isOwner = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
                 if(isOwner || isJoinedGroup)
                 {
+                    Slide currentSlide = provider.Presentation.GetCurrentSlide(Guid.Parse(presentationId));
                     return new ResponseMessage
                     {
                         status = true,
-                        data = provider.Presentation.GetCurrentSlide(Guid.Parse(presentationId)),
+                        data = new
+                        {
+                            slideId = currentSlide is not null ? currentSlide.SlideId : null,
+                            slideType = currentSlide is not null ? currentSlide.SlideType : null,
+                        },
                         message = "Get current slide successfully"
                     };
                 }
@@ -685,6 +699,25 @@ namespace Cahut_Backend.Controllers
         [HttpGet("/presentation/present/info"), Authorize]
         public ResponseMessage GetPresentationInfoTeacher(string presentationId)
         {
+            bool canParse = true;
+            try
+            {
+                Guid.Parse(presentationId);
+            }
+            catch
+            {
+                canParse = false;
+
+            }
+            if (canParse is false)
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Guid format is invalid"
+                };
+            }
             Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             if (provider.Presentation.isPresentating(Guid.Parse(presentationId)))
             {
@@ -747,6 +780,24 @@ namespace Cahut_Backend.Controllers
         public ResponseMessage GetGroupPresentationInfoStudent(string presentationId, string groupId)
         {
             Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            bool canParse = true;
+            try
+            {
+                Guid.Parse(presentationId);
+            } catch
+            {
+                canParse = false;
+                
+            }
+            if (canParse is false)
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Guid format is invalid"
+                };
+            }
             bool isMember = provider.Group.isMember(userId, Guid.Parse(groupId));
             if (isMember)
             {
@@ -768,6 +819,25 @@ namespace Cahut_Backend.Controllers
         [HttpGet("/presentation/getType")]
         public ResponseMessage GetPresentationType(string presentationId)
         {
+            bool canParse = true;
+            try
+            {
+                Guid.Parse(presentationId);
+            }
+            catch
+            {
+                canParse = false;
+
+            }
+            if (canParse is false)
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Guid format is invalid"
+                };
+            }
             bool isBeingPresented = provider.Presentation.isPresentating(Guid.Parse(presentationId));
             if (isBeingPresented)
             {

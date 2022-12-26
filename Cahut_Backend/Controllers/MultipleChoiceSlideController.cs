@@ -18,7 +18,8 @@ namespace Cahut_Backend.Controllers
             Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             //Presentation presentation = provider.Presentation.GetPresentationByNameAndTeacherId(presentationName, userId);
             bool isExisted = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
-            if (isExisted == true)
+            bool isCollab = provider.Presentation.isCollaborator(Guid.Parse(presentationId), userId);
+            if (isExisted == true || isCollab)
             {
                 string slideId = Helper.RandomString(8);
                 while (provider.MultipleChoiceSlide.CheckSlideIdExisted(slideId) == true)
@@ -44,8 +45,11 @@ namespace Cahut_Backend.Controllers
         [HttpGet("/slide/multiplechoice/delete"), Authorize]
         public ResponseMessage Delete(string slideId)
         {
+            Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            Guid presentationId = provider.MultipleChoiceSlide.GetPresentationId(slideId);
             bool isExisted = provider.MultipleChoiceSlide.CheckSlideIdExisted(slideId);
-            if(isExisted == true)
+            bool isCollab = provider.Presentation.isCollaborator(presentationId, userId);
+            if (isExisted == true || isCollab )
             {
                 int deleteResult = provider.MultipleChoiceSlide.Delete(slideId);
                 //string questionId = provider.Question.DeleteWithSlide(slideId);
@@ -290,6 +294,7 @@ namespace Cahut_Backend.Controllers
             JArray options = (JArray)objTemp["options"];
             List<JObject> optionList = options.ToObject<List<JObject>>();
             string questionId = question["questionId"].ToString();
+
 
             if (question["isEdited"].ToString() == "true")
             {

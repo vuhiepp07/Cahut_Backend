@@ -54,6 +54,9 @@ namespace Cahut_Backend.Repository
             return context.HeadingSlide.Any(p => p.SlideId == id);
         }
        
-
+        public Guid GetPresentationId(string slideId)
+        {
+            return context.HeadingSlide.Find(slideId).PresentationId;
+        }
     }
 }

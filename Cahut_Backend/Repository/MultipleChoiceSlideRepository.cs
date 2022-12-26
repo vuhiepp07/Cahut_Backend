@@ -33,5 +33,11 @@ namespace Cahut_Backend.Repository
             context.MultipleChoiceSlide.Remove(slide);
             return context.SaveChanges();
         }
+
+        public Guid GetPresentationId(string slideId)
+        {
+            Guid presentationId = context.MultipleChoiceSlide.Find(slideId).PresentationId;
+            return presentationId;
+        }
     }
 }
