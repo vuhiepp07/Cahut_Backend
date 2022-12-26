@@ -12,7 +12,7 @@ namespace Cahut_Backend.Controllers
     [ApiController]
     public class PresentationController : BaseController
     {
-        [HttpGet("/presentation/getslides")]
+        [HttpGet("/presentation/getslides"), Authorize]
         public ResponseMessage GetPresentationSlide(string presentationId)
         {
 
@@ -169,10 +169,29 @@ namespace Cahut_Backend.Controllers
             };
         }
 
-        [HttpGet("/presentation/info")]
+        [HttpGet("/presentation/info"), Authorize]
         public ResponseMessage GetPresentationInfo(string presentationId)
         {
             Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            bool canParse = true;
+            try
+            {
+                Guid.Parse(presentationId);
+            }
+            catch
+            {
+                canParse = false;
+
+            }
+            if (canParse is false)
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Guid format is invalid"
+                };
+            }
             bool isCollab = provider.Presentation.isCollaborator(Guid.Parse(presentationId), userId);
             bool isOwner = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
             if(isCollab || isOwner)
@@ -370,6 +389,16 @@ namespace Cahut_Backend.Controllers
         [HttpGet("/presentation/groupPresent")]
         public ResponseMessage GroupPresent(string presentationId, string groupName)
         {
+            Models.Group group = provider.Group.GetGroupByName(groupName);
+            if(group == null)
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Group name does not existed"
+                };
+            }
             Guid groupId = provider.Group.GetGroupByName(groupName).GroupId;
             Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             if (!provider.Group.AlreadyJoinedGroup(userId, groupId)){
@@ -863,6 +892,23 @@ namespace Cahut_Backend.Controllers
                     message = "Presentation is not being presented"
                 };
             }
+        }
+
+        [HttpGet("/presentation/get/numOfPresentations"), Authorize]
+        public ResponseMessage GetNumofPresentations() {
+            Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            List<object> ownedPresentations = provider.Presentation.GetPresentationList(userId);
+            List<object> collabPresentations = provider.Presentation.GetCollaboratorPresentation(userId);
+            return new ResponseMessage
+            {
+                status = true,
+                data = new
+                {
+                    ownedPresentations = ownedPresentations.Count,
+                    collabPresentations = collabPresentations.Count
+                },
+                message = "Get number of presentations successfully"
+            };
         }
     }
 }

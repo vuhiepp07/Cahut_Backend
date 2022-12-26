@@ -213,9 +213,11 @@ namespace Cahut_Backend.Repository
             slideList.AddRange(paragraphSlides);
             slideList.AddRange(headingSLides);
             slideList.OrderBy(p => p.DateCreated);
-            if(slideList.Count > 0)
+
+            var totalSlidesSorted = slideList.OrderBy(p => p.DateCreated);
+            if (slideList.Count > 0)
             {
-                var firstSlide = slideList.First();
+                var firstSlide = totalSlidesSorted.First();
                 firstSlide.IsCurrent = 1;
                 return context.SaveChanges();
             }
@@ -240,9 +242,12 @@ namespace Cahut_Backend.Repository
             slideList.AddRange(headingSLides);
 
             var totalSlidesSorted = slideList.OrderBy(p => p.DateCreated);
-
-            var firstSlide = totalSlidesSorted.First();
-            firstSlide.IsCurrent = 1;
+            if (slideList.Count > 0)
+            {
+                var firstSlide = totalSlidesSorted.First();
+                firstSlide.IsCurrent = 1;
+                return context.SaveChanges();
+            }
             return context.SaveChanges();
         }
 
@@ -258,15 +263,18 @@ namespace Cahut_Backend.Repository
                 string currentSlideId = currentSlide.SlideId;
                 Slide slide = context.Slide.Find(currentSlideId);
                 slide.IsCurrent = 0;
-                Group presetatingGroup = context.Group.Where(group => group.PresentationId == presentationId.ToString()).FirstOrDefault();
-                if (presetatingGroup != null)
-                {
-                    presetatingGroup.PresentationId = null;
-                    presetatingGroup.HasPresentationPresenting = false;
-                }
+                
 
                 return context.SaveChanges();
             }
+
+            Group presetatingGroup = context.Group.Where(group => group.PresentationId == presentationId.ToString()).Select(g => g).FirstOrDefault();
+            if (presetatingGroup != null)
+            {
+                presetatingGroup.PresentationId = null;
+                presetatingGroup.HasPresentationPresenting = false;
+            }
+
             return context.SaveChanges();
 
         }

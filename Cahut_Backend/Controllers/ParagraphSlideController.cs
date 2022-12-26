@@ -1,4 +1,5 @@
 ﻿using Cahut_Backend.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
@@ -10,7 +11,7 @@ namespace Cahut_Backend.Controllers
     [ApiController]
     public class ParagraphSlideController : BaseController
     {
-        [HttpPost("/slide/paragraph/editSlide")]
+        [HttpPost("/slide/paragraph/editSlide"), Authorize]
         public ResponseMessage UpdateParagraphSlide(object updateSlideModel)
         {
             JObject objTemp = JObject.Parse(updateSlideModel.ToString());

@@ -11,7 +11,7 @@ namespace Cahut_Backend.Controllers
     [ApiController]
     public class HeadingSlideController : BaseController
     {
-        [HttpPost("/slide/heading/editSlide")]
+        [HttpPost("/slide/heading/editSlide"), Authorize]
         public ResponseMessage editHeadingSlide(object editSlideModel)
         {
             JObject objTemp = JObject.Parse(editSlideModel.ToString());

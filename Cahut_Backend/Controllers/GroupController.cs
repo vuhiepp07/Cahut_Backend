@@ -352,11 +352,13 @@ namespace Cahut_Backend.Controllers
             Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             List<object> res = provider.Group.GetJoinedGroup(userId);
             List<object> res2 = provider.Group.GetManagedGroup(userId);
+            List<object> collabPresentations = provider.Presentation.GetCollaboratorPresentation(userId);
             return new ResponseMessage
             {
                 status = true,
                 data = new
                 {
+                    CollabPresentation = collabPresentations.Count,
                     PresentationNumber = provider.Presentation.CountPresentationOwned(userId),
                     GroupsIsOwner = res2.Count(),
                     GroupsIsNotOwner = res.Count(),
@@ -399,16 +401,16 @@ namespace Cahut_Backend.Controllers
         }
 
         [HttpGet("group/getPresentation"), Authorize]
-        public ResponseMessage GetPresentationInGroup(string groupId)
+        public ResponseMessage GetPresentationInGroup(string groupName)
         {
-            Group group = provider.Group.GetGroupById(Guid.Parse(groupId));
+            Group group = provider.Group.GetGroupByName(groupName);
             if (group is not null)
             {
                 Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
                 
-                if (provider.Group.AlreadyJoinedGroup(userId, Guid.Parse(groupId)))
+                if (provider.Group.AlreadyJoinedGroup(userId, group.GroupId))
                 {
-                    string presentation = provider.Group.GetPresentationInGroup(Guid.Parse(groupId));
+                    string presentation = provider.Group.GetPresentationInGroup(group.GroupId);
                     string role = provider.Group.GetMemberRoleInGroup(userId, group.GroupId);
 
                     return new ResponseMessage

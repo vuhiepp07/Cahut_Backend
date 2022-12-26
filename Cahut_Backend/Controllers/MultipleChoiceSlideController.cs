@@ -233,6 +233,7 @@ namespace Cahut_Backend.Controllers
         [HttpGet("/slide/multiplechoice/delete/option"), Authorize]
         public ResponseMessage DeleteOption(string optionId)
         {
+
             bool optionExisted = provider.MultipleChoiceOption.MultipleChoiceOptionIdExisted(optionId);
             if(optionExisted == true)
             {
@@ -295,7 +296,8 @@ namespace Cahut_Backend.Controllers
             List<JObject> optionList = options.ToObject<List<JObject>>();
             string questionId = question["questionId"].ToString();
 
-
+            Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            
             if (question["isEdited"].ToString() == "true")
             {
                 string slideId = question["slideId"].ToString();

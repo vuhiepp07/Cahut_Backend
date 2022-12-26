@@ -23,6 +23,10 @@ namespace Cahut_Backend.Repository
 
         public List<object> GetChatFromPresentation(Guid presentationId)
         {
+            if (!IsPresentHasChat(presentationId))
+            {
+                createNewChat(presentationId);
+            }
             Chat chat = context.Chat.Where(c => c.PresentationId == presentationId)
                                     .Select(c => c)
                                     .FirstOrDefault();
