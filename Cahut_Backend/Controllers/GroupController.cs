@@ -415,7 +415,7 @@ namespace Cahut_Backend.Controllers
 
                     return new ResponseMessage
                     {
-                        status = false,
+                        status = true,
                         data = presentation is not null ? new { role = role, presentationId = presentation } : null,
                         message = presentation is not null ?  "Get presentation in group successfully" : "Group dont have presentation now"
                     };

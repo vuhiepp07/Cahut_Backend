@@ -13,30 +13,50 @@ namespace Cahut_Backend.SignalR.Hubs
         Dictionary<string, string> hubConnection = new Dictionary<string, string>();
         private readonly static ConnectionStorage<string> _connections =
             new ConnectionStorage<string>();
-        public async Task SendResult(string slideId, string message)
+        public async Task SendResult(string presentationId, string message)
         {
-            Console.WriteLine(slideId + " " + message);
-            foreach (var connectionId in _connections.GetConnections(slideId))
+            Console.WriteLine("Send message to all " + presentationId);
+            foreach (var connectionId in _connections.GetConnections(presentationId))
             {
-                await Clients.Client(connectionId).SendAsync("ReceiveResult", slideId, message);
+                await Clients.Client(connectionId).SendAsync("ReceiveResult", presentationId, message);
             }
             
         }
 
-        public async Task SendMessage(string userId, string message)
+        public async Task SendMessage(string presentationId, string message)
         {
+            foreach (var connectionId in _connections.GetConnections(presentationId))
+            {
+                await Clients.Client(connectionId).SendAsync("ReceiveMessage", presentationId, message);
+            }
+        }
 
+        public async Task SendQuestion(string presentationId, string question)
+        {
+            foreach (var connectionId in _connections.GetConnections(presentationId))
+            {
+                await Clients.Client(connectionId).SendAsync("ReceiveQuestion", presentationId, question);
+            }
+        }
+
+        public async Task ChangeSlide(string presentationId, string action)
+        {
+            foreach (var connectionId in _connections.GetConnections(presentationId))
+            {
+                await Clients.Client(connectionId).SendAsync("ChangeSlide", presentationId, action);
+            }
         }
 
         public override Task OnConnectedAsync()
         {
-            string slideId = Context.GetHttpContext().Request.Query["slideId"];
-            Console.WriteLine(slideId);
-            if(slideId != null)
+            string presentationId = Context.GetHttpContext().Request.Query["presentationId"];
+            if(presentationId != null)
             {
-                _connections.Add(slideId, Context.ConnectionId);
+                _connections.Add(presentationId, Context.ConnectionId);
+                Console.WriteLine(Context.ConnectionId);
+                Console.WriteLine("presentationId " + presentationId + " has :" + _connections.GetConnections(presentationId).Count() + " connections");
             }
-            Console.WriteLine(_connections.Count);
+            
             return base.OnConnectedAsync();
         }
 

@@ -480,8 +480,19 @@ namespace Cahut_Backend.Controllers
             Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             bool isCollab = provider.Presentation.isCollaborator(Guid.Parse(presentationId), userId);
             bool isOwner = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
-            if (isCollab || isOwner)
-            {
+            if (provider.Presentation.GetPresentationType(Guid.Parse(presentationId)) == "group") {
+                Guid presentingGroup = provider.Presentation.GetPresentGroup(Guid.Parse(presentationId));
+                if (provider.Group.GetMemberRoleInGroup(userId, presentingGroup) != "Co-owner")
+                {
+                    return new ResponseMessage
+                    {
+                        status = false,
+                        data = null,
+                        message = "Only owner and Co-owner can end presentation"
+                    };
+                }
+            }
+            
                 if (!provider.Presentation.isPresentating(Guid.Parse(presentationId)))
                 {
                     return new ResponseMessage
@@ -498,14 +509,8 @@ namespace Cahut_Backend.Controllers
                     data = null,
                     message = isEnd > 0 ? "End a presentation":"Failed to end presentation"
                 };
-            }
+            
 
-            return new ResponseMessage
-            {
-                status = false,
-                data = null,
-                message = "Only owner or collaborators can end presentation"
-            };
         }
 
         [HttpGet("/presentation/public/currentSlide")]
