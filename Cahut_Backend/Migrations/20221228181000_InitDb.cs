@@ -50,7 +50,7 @@ namespace CahutBackend.Migrations
                     AccountStatus = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ResetPasswordString = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    RefreshTokenExpiredTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2022, 12, 23, 15, 59, 47, 177, DateTimeKind.Utc).AddTicks(3351))
+                    RefreshTokenExpiredTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2022, 12, 28, 18, 9, 59, 950, DateTimeKind.Utc).AddTicks(4231))
                 },
                 constraints: table =>
                 {
@@ -303,6 +303,41 @@ namespace CahutBackend.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserUpvoteQuestion",
+                columns: table => new
+                {
+                    QuestionId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    PresentationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    GroupId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TimeUpVote = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserUpvoteQuestion", x => new { x.UserId, x.PresentationId, x.QuestionId });
+                    table.ForeignKey(
+                        name: "FK_UserUpvoteQuestion_Group_GroupId",
+                        column: x => x.GroupId,
+                        principalTable: "Group",
+                        principalColumn: "GroupId");
+                    table.ForeignKey(
+                        name: "FK_UserUpvoteQuestion_PresentationQuestion_QuestionId",
+                        column: x => x.QuestionId,
+                        principalTable: "PresentationQuestion",
+                        principalColumn: "QuestionId");
+                    table.ForeignKey(
+                        name: "FK_UserUpvoteQuestion_Presentation_PresentationId",
+                        column: x => x.PresentationId,
+                        principalTable: "Presentation",
+                        principalColumn: "PresentationId");
+                    table.ForeignKey(
+                        name: "FK_UserUpvoteQuestion_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "User",
+                        principalColumn: "UserId");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "MultipleChoiceOption",
                 columns: table => new
                 {
@@ -321,6 +356,41 @@ namespace CahutBackend.Migrations
                         principalTable: "MultipleChoiceQuestion",
                         principalColumn: "QuestionId",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserSubmitChoice",
+                columns: table => new
+                {
+                    QuestionId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    OptionId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    GroupId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SubmitTime = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserSubmitChoice", x => new { x.UserId, x.OptionId, x.QuestionId });
+                    table.ForeignKey(
+                        name: "FK_UserSubmitChoice_Group_GroupId",
+                        column: x => x.GroupId,
+                        principalTable: "Group",
+                        principalColumn: "GroupId");
+                    table.ForeignKey(
+                        name: "FK_UserSubmitChoice_MultipleChoiceOption_OptionId",
+                        column: x => x.OptionId,
+                        principalTable: "MultipleChoiceOption",
+                        principalColumn: "OptionId");
+                    table.ForeignKey(
+                        name: "FK_UserSubmitChoice_MultipleChoiceQuestion_QuestionId",
+                        column: x => x.QuestionId,
+                        principalTable: "MultipleChoiceQuestion",
+                        principalColumn: "QuestionId");
+                    table.ForeignKey(
+                        name: "FK_UserSubmitChoice_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "User",
+                        principalColumn: "UserId");
                 });
 
             migrationBuilder.CreateIndex(
@@ -410,6 +480,46 @@ namespace CahutBackend.Migrations
                 table: "User",
                 column: "Email",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserSubmitChoice_GroupId",
+                table: "UserSubmitChoice",
+                column: "GroupId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserSubmitChoice_OptionId",
+                table: "UserSubmitChoice",
+                column: "OptionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserSubmitChoice_QuestionId",
+                table: "UserSubmitChoice",
+                column: "QuestionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserSubmitChoice_UserId",
+                table: "UserSubmitChoice",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserUpvoteQuestion_GroupId",
+                table: "UserUpvoteQuestion",
+                column: "GroupId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserUpvoteQuestion_PresentationId",
+                table: "UserUpvoteQuestion",
+                column: "PresentationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserUpvoteQuestion_QuestionId",
+                table: "UserUpvoteQuestion",
+                column: "QuestionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserUpvoteQuestion_UserId",
+                table: "UserUpvoteQuestion",
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -428,25 +538,31 @@ namespace CahutBackend.Migrations
                 name: "HeadingSlide");
 
             migrationBuilder.DropTable(
-                name: "MultipleChoiceOption");
-
-            migrationBuilder.DropTable(
                 name: "ParagraphSlide");
 
             migrationBuilder.DropTable(
                 name: "PresentationDetail");
 
             migrationBuilder.DropTable(
-                name: "PresentationQuestion");
+                name: "UserSubmitChoice");
+
+            migrationBuilder.DropTable(
+                name: "UserUpvoteQuestion");
 
             migrationBuilder.DropTable(
                 name: "Chat");
 
             migrationBuilder.DropTable(
+                name: "Role");
+
+            migrationBuilder.DropTable(
+                name: "MultipleChoiceOption");
+
+            migrationBuilder.DropTable(
                 name: "Group");
 
             migrationBuilder.DropTable(
-                name: "Role");
+                name: "PresentationQuestion");
 
             migrationBuilder.DropTable(
                 name: "MultipleChoiceQuestion");

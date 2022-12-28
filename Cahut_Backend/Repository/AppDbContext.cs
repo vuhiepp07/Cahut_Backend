@@ -22,6 +22,9 @@ namespace Cahut_Backend.Repository
         public DbSet<ChatMessage> ChatMessage { get; set; }
         public DbSet<Slide> Slide { get; set; }
         public DbSet<Question> Question { get; set; }
+
+        public DbSet<UserUpvoteQuestion> UserUpvoteQuestion { get; set; }
+        public DbSet<UserSubmitChoice> UserSubmitChoice { get; set; }
         protected override void OnConfiguring(DbContextOptionsBuilder builder)
         {
             base.OnConfiguring(builder);
@@ -39,6 +42,47 @@ namespace Cahut_Backend.Repository
             //            .HasValue<ParagraphSlide>(2)
             //            .HasValue<HeadingSlide>(3);
 
+            builder.Entity<UserUpvoteQuestion>(entity =>
+            {
+                entity.ToTable("UserUpvoteQuestion");
+                entity.HasKey(p => new { p.UserId, p.PresentationId, p.QuestionId });
+                entity.HasIndex(p => p.UserId).IsUnique(false);
+                entity.HasIndex(p => p.PresentationId).IsUnique(false);
+                entity.HasIndex(p => p.QuestionId).IsUnique(false);
+                entity.HasOne(p => p.User)
+                        .WithMany(p => p.UserUpvoteQuestions)
+                        .HasForeignKey(p => p.UserId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(p => p.Group)
+                        .WithMany(p => p.UserUpvoteQuestions)
+                        .HasForeignKey(p => p.GroupId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(p => p.Presentation)
+                        .WithMany(p => p.UserUpvoteQuestions)
+                        .HasForeignKey(p => p.PresentationId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(p => p.PresentationQuestion)
+                        .WithMany(p => p.UserUpvoteQuestions)
+                        .HasForeignKey(p => p.QuestionId).OnDelete(DeleteBehavior.NoAction);
+            });
+
+            builder.Entity<UserSubmitChoice>(entity =>
+            {
+                entity.ToTable("UserSubmitChoice");
+                entity.HasKey(p => new {p.UserId, p.OptionId, p.QuestionId});
+                entity.HasIndex(p => p.UserId).IsUnique(false);
+                entity.HasIndex(p => p.OptionId).IsUnique(false);
+                entity.HasIndex(p => p.QuestionId).IsUnique(false);
+                entity.HasOne(p => p.User)
+                        .WithMany(p => p.UserSubmitChoices)
+                        .HasForeignKey(p => p.UserId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(p => p.Group)
+                        .WithMany(p => p.UserSubmitChoices)
+                        .HasForeignKey(p => p.GroupId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(p => p.MultipleChoiceQuestion)
+                        .WithMany(p => p.UserSubmitChoices)
+                        .HasForeignKey(p => p.QuestionId).OnDelete(DeleteBehavior.NoAction);
+                entity.HasOne(p => p.MultipleChoiceOption)
+                        .WithMany(p => p.UserSubmitChoices)
+                        .HasForeignKey(p => p.OptionId).OnDelete(DeleteBehavior.NoAction);
+            });
 
             builder.Entity<EmailSender>(entity => {
                 entity.ToTable("EmailSender");

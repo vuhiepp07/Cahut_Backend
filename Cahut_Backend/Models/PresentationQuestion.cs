@@ -6,6 +6,7 @@
         public int NumUpVote { get; set; }
         public bool isAnswered { get; set; }
         public Presentation Presentation { get; set; }
+        public List<UserUpvoteQuestion> UserUpvoteQuestions { get; set; }
 
     }
 }

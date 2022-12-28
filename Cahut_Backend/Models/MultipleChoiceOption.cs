@@ -9,5 +9,7 @@
         public DateTime CreatedDate { get; set; }
 
         public MultipleChoiceQuestion MultipleChoiceQuestion { get; set; }
+        public List<UserSubmitChoice> UserSubmitChoices { get; set; }
+
     }
 }

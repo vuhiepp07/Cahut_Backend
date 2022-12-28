@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CahutBackend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20221223155947_InitDb")]
+    [Migration("20221228181000_InitDb")]
     partial class InitDb
     {
         /// <inheritdoc />
@@ -335,7 +335,7 @@ namespace CahutBackend.Migrations
                     b.Property<DateTime>("RefreshTokenExpiredTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2022, 12, 23, 15, 59, 47, 177, DateTimeKind.Utc).AddTicks(3351));
+                        .HasDefaultValue(new DateTime(2022, 12, 28, 18, 9, 59, 950, DateTimeKind.Utc).AddTicks(4231));
 
                     b.Property<string>("ResetPasswordString")
                         .HasColumnType("nvarchar(max)");
@@ -350,6 +350,66 @@ namespace CahutBackend.Migrations
                         .IsUnique();
 
                     b.ToTable("User", (string)null);
+                });
+
+            modelBuilder.Entity("Cahut_Backend.Models.UserSubmitChoice", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("OptionId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("QuestionId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("SubmitTime")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("UserId", "OptionId", "QuestionId");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("OptionId");
+
+                    b.HasIndex("QuestionId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserSubmitChoice", (string)null);
+                });
+
+            modelBuilder.Entity("Cahut_Backend.Models.UserUpvoteQuestion", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PresentationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("QuestionId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("TimeUpVote")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("UserId", "PresentationId", "QuestionId");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("PresentationId");
+
+                    b.HasIndex("QuestionId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserUpvoteQuestion", (string)null);
                 });
 
             modelBuilder.Entity("Cahut_Backend.Models.MultipleChoiceQuestion", b =>
@@ -517,6 +577,76 @@ namespace CahutBackend.Migrations
                     b.Navigation("Presentation");
                 });
 
+            modelBuilder.Entity("Cahut_Backend.Models.UserSubmitChoice", b =>
+                {
+                    b.HasOne("Cahut_Backend.Models.Group", "Group")
+                        .WithMany("UserSubmitChoices")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Cahut_Backend.Models.MultipleChoiceOption", "MultipleChoiceOption")
+                        .WithMany("UserSubmitChoices")
+                        .HasForeignKey("OptionId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Cahut_Backend.Models.MultipleChoiceQuestion", "MultipleChoiceQuestion")
+                        .WithMany("UserSubmitChoices")
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Cahut_Backend.Models.User", "User")
+                        .WithMany("UserSubmitChoices")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("MultipleChoiceOption");
+
+                    b.Navigation("MultipleChoiceQuestion");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Cahut_Backend.Models.UserUpvoteQuestion", b =>
+                {
+                    b.HasOne("Cahut_Backend.Models.Group", "Group")
+                        .WithMany("UserUpvoteQuestions")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Cahut_Backend.Models.Presentation", "Presentation")
+                        .WithMany("UserUpvoteQuestions")
+                        .HasForeignKey("PresentationId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Cahut_Backend.Models.PresentationQuestion", "PresentationQuestion")
+                        .WithMany("UserUpvoteQuestions")
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Cahut_Backend.Models.User", "User")
+                        .WithMany("UserUpvoteQuestions")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("Presentation");
+
+                    b.Navigation("PresentationQuestion");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Cahut_Backend.Models.MultipleChoiceQuestion", b =>
                 {
                     b.HasOne("Cahut_Backend.Models.MultipleChoiceSlide", "MultipleChoiceSlide")
@@ -580,6 +710,15 @@ namespace CahutBackend.Migrations
             modelBuilder.Entity("Cahut_Backend.Models.Group", b =>
                 {
                     b.Navigation("GroupDetails");
+
+                    b.Navigation("UserSubmitChoices");
+
+                    b.Navigation("UserUpvoteQuestions");
+                });
+
+            modelBuilder.Entity("Cahut_Backend.Models.MultipleChoiceOption", b =>
+                {
+                    b.Navigation("UserSubmitChoices");
                 });
 
             modelBuilder.Entity("Cahut_Backend.Models.Presentation", b =>
@@ -596,6 +735,8 @@ namespace CahutBackend.Migrations
                     b.Navigation("PresentationDetails");
 
                     b.Navigation("PresentationQuestions");
+
+                    b.Navigation("UserUpvoteQuestions");
                 });
 
             modelBuilder.Entity("Cahut_Backend.Models.Role", b =>
@@ -608,11 +749,22 @@ namespace CahutBackend.Migrations
                     b.Navigation("Group");
 
                     b.Navigation("Presentations");
+
+                    b.Navigation("UserSubmitChoices");
+
+                    b.Navigation("UserUpvoteQuestions");
                 });
 
             modelBuilder.Entity("Cahut_Backend.Models.MultipleChoiceQuestion", b =>
                 {
                     b.Navigation("MultipleChoiceOptions");
+
+                    b.Navigation("UserSubmitChoices");
+                });
+
+            modelBuilder.Entity("Cahut_Backend.Models.PresentationQuestion", b =>
+                {
+                    b.Navigation("UserUpvoteQuestions");
                 });
 
             modelBuilder.Entity("Cahut_Backend.Models.MultipleChoiceSlide", b =>

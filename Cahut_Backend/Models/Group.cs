@@ -12,5 +12,9 @@
         public List<GroupDetail> GroupDetails { get; set; }
         public string PresentationId { get; set; }
         public User User { get; set; }
+
+        public List<UserUpvoteQuestion> UserUpvoteQuestions { get; set; }
+        public List<UserSubmitChoice> UserSubmitChoices { get; set; }
+
     }
 }

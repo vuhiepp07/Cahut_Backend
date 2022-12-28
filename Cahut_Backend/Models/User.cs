@@ -15,5 +15,7 @@
         //public List<PresentationDetail> PresentationDetails { get; set; }
         public List<Group> Group { get; set; }
         public List<Presentation> Presentations { get; set; }
+        public List<UserSubmitChoice> UserSubmitChoices { get; set; }
+        public List<UserUpvoteQuestion> UserUpvoteQuestions { get; set; }
     }
 }

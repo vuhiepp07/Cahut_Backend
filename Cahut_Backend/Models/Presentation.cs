@@ -14,6 +14,7 @@
         public List<MultipleChoiceSlide> MultipleChoiceSlides { get; set; }
         public List<ParagraphSlide> ParagraphSlides { get; set; }
         public List<HeadingSlide> HeadingSlides { get; set; }
+        public List<UserUpvoteQuestion> UserUpvoteQuestions { get; set; }
         public Chat Chat { get; set; }
 
     }
