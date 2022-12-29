@@ -23,17 +23,41 @@ namespace Cahut_Backend.Repository
                 isAnswered = false,
                 NumUpVote = 0,
                 PresentationId = presentationId,
+                UserUpvoteQuestions = new List<UserUpvoteQuestion>(),
             };
             context.PresentationQuestion.Add(presentationQuestion);
             return context.SaveChanges();
         }
 
-        public int UpVoteQuestion(string questionId)
+        public bool IsUpvote(string questionId, Guid userId)
+        {
+            return context.PresentationQuestion.Any(q => q.QuestionId == questionId && q.UserUpvoteQuestions.Any(q => q.UserId == userId && q.QuestionId == questionId));
+        }
+
+        public int UpVoteQuestion(string questionId, Guid userId)
         {
             PresentationQuestion presentationQuestion = context.PresentationQuestion.Find(questionId);
-            if(questionId != null)
+            if (questionId != null)
             {
+                Guid presentationId = GetPresentationId(questionId);
+                Group presetatingGroup = context.Group.Where(group => group.PresentationId == presentationId.ToString()).Select(g => g).FirstOrDefault();
                 presentationQuestion.NumUpVote = presentationQuestion.NumUpVote + 1;
+                if (userId != Guid.Empty)
+                {
+                    UserUpvoteQuestion upvoteHistory = new UserUpvoteQuestion
+                    {
+                        QuestionId = questionId,
+                        PresentationId = presentationQuestion.PresentationId,
+                        GroupId = presetatingGroup != null ? presetatingGroup.GroupId : Guid.Empty,
+                        UserId = userId,
+                        TimeUpVote = DateTime.UtcNow.AddHours(7),
+                    };
+                    context.UserUpvoteQuestion.Add(upvoteHistory);
+                    //PresentationQuestion question = context.PresentationQuestion.Find(questionId);
+                    //question.UserUpvoteQuestions.Add(upvoteHistory);
+                    //context.PresentationQuestion.Find(questionId).UserUpvoteQuestions.Add(upvoteHistory);
+
+                }
                 return context.SaveChanges();
             }
             return 0;
@@ -50,8 +74,9 @@ namespace Cahut_Backend.Repository
             return 0;
         }
 
-        public List<Object> GetPresentationQuestions(Guid presentationId)
+        public List<Object> GetPresentationQuestions(Guid presentationId, Guid userId)
         {
+            
             List<Object> presentationQuestions = new List<Object>();
             List<PresentationQuestion> questionList = context.PresentationQuestion.Where(q => q.PresentationId == presentationId)
                                                                                     .Select(q => q).ToList();
@@ -59,11 +84,12 @@ namespace Cahut_Backend.Repository
             {
                 presentationQuestions.Add(new
                 {
+                    isUpvote = context.UserUpvoteQuestion.Any(q => q.UserId == userId && q.QuestionId == question.QuestionId),
                     questionId = question.QuestionId,
                     question = question.Content,
                     numUpVote = question.NumUpVote,
                     isAnswered = question.isAnswered
-                });
+                }); ; ;
             }
             return presentationQuestions;
         }

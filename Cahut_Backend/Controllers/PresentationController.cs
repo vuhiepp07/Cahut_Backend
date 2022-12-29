@@ -18,7 +18,7 @@ namespace Cahut_Backend.Controllers
     {
         private readonly IHubContext<SlideHub> _hubContext;
 
-        public PresentationController(IHubContext<SlideHub> hubContext):base()
+        public PresentationController(IHubContext<SlideHub> hubContext) : base()
         {
             _hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
         }
@@ -53,7 +53,7 @@ namespace Cahut_Backend.Controllers
         {
             Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             bool isExisted = provider.Presentation.CheckExisted(userId, presentationName);
-            if(isExisted == false)
+            if (isExisted == false)
             {
                 int createResult = provider.Presentation.Create(userId, presentationName);
                 return new ResponseMessage
@@ -81,14 +81,14 @@ namespace Cahut_Backend.Controllers
             string newName = (string)objTemp["newName"];
             bool isExited = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
             //Presentation presentation = provider.Presentation.GetPresentationByNameAndTeacherId(oldName, userId);
-            if(isExited == true)
+            if (isExited == true)
             {
                 bool newNameExisted = provider.Presentation.CheckExisted(userId, newName);
-                if(newNameExisted == true)
+                if (newNameExisted == true)
                 {
                     return new ResponseMessage
                     {
-                        status =false,
+                        status = false,
                         data = null,
                         message = $"Presentation '{newName}' already existed in your presentation list"
                     };
@@ -205,7 +205,7 @@ namespace Cahut_Backend.Controllers
             }
             bool isCollab = provider.Presentation.isCollaborator(Guid.Parse(presentationId), userId);
             bool isOwner = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
-            if(isCollab || isOwner)
+            if (isCollab || isOwner)
             {
                 return new ResponseMessage
                 {
@@ -274,7 +274,7 @@ namespace Cahut_Backend.Controllers
                     {
                         exisedEmail.Add(email);
                     }
-                    
+
                 }
 
                 if (collabAdded == emails.Count)
@@ -286,7 +286,7 @@ namespace Cahut_Backend.Controllers
                         message = "Add collaborators successfully"
                     };
                 }
-                if (collabAdded != emails.Count && collabAdded > 0 )
+                if (collabAdded != emails.Count && collabAdded > 0)
                 {
                     return new ResponseMessage
                     {
@@ -313,8 +313,8 @@ namespace Cahut_Backend.Controllers
                     data = exisedEmail,
                     message = "Failed to add " + errorMessage
                 };
-                
-            }      
+
+            }
 
             return new ResponseMessage
             {
@@ -394,10 +394,10 @@ namespace Cahut_Backend.Controllers
         }
 
         [HttpGet("/presentation/groupPresent")]
-        public  ResponseMessage GroupPresent(string presentationId, string groupName)
+        public ResponseMessage GroupPresent(string presentationId, string groupName)
         {
             Models.Group group = provider.Group.GetGroupByName(groupName);
-            if(group == null)
+            if (group == null)
             {
                 return new ResponseMessage
                 {
@@ -408,7 +408,7 @@ namespace Cahut_Backend.Controllers
             }
             Guid groupId = provider.Group.GetGroupByName(groupName).GroupId;
             Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            if (!provider.Group.AlreadyJoinedGroup(userId, groupId)){
+            if (!provider.Group.AlreadyJoinedGroup(userId, groupId)) {
                 return new ResponseMessage
                 {
                     status = false,
@@ -418,7 +418,7 @@ namespace Cahut_Backend.Controllers
             }
             bool isCollab = provider.Presentation.isCollaborator(Guid.Parse(presentationId), userId);
             bool isOwner = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
-            if(isCollab || isOwner)
+            if (isCollab || isOwner)
             {
                 if (provider.Presentation.isPresentating(Guid.Parse(presentationId)))
                 {
@@ -432,12 +432,12 @@ namespace Cahut_Backend.Controllers
 
                 int isPresent = provider.Presentation.StartGroupPresentation(Guid.Parse(presentationId), groupId);
                 List<string> emails = provider.Group.GetGrpEmails(groupId);
-                foreach(string email in emails)
+                foreach (string email in emails)
                 {
                     foreach (var connectionId in SlideHub._userConnections.GetConnections(email))
                     {
                         Console.WriteLine(connectionId);
-                        _hubContext.Clients.Client(connectionId).SendAsync("NotifyGroup", new {grpName= groupName, link= "http://localhost:3000/view/" + presentationId,});
+                        _hubContext.Clients.Client(connectionId).SendAsync("NotifyGroup", new { grpName = groupName, link = Helper.TestingLink + "/view/" + presentationId, });
                     }
                 }
                 //_hubContext.Clients.Client().SendMessage(presentationId, "Presenting in group");
@@ -526,7 +526,7 @@ namespace Cahut_Backend.Controllers
                     message = "Only owner and Co-owner can end presentation"
                 };
             }
-            if((provider.Presentation.GetPresentationType(Guid.Parse(presentationId)) == "public"))
+            if ((provider.Presentation.GetPresentationType(Guid.Parse(presentationId)) == "public"))
             {
                 int isEnd = provider.Presentation.EndPresentation(Guid.Parse(presentationId));
                 return new ResponseMessage
@@ -548,7 +548,7 @@ namespace Cahut_Backend.Controllers
         public ResponseMessage GetCurrentSlide(string presentationId)
         {
             string presentType = provider.Presentation.GetPresentationType(Guid.Parse(presentationId));
-            if(presentType == "public")
+            if (presentType == "public")
             {
                 if (provider.Presentation.isPresentating(Guid.Parse(presentationId)))
                 {
@@ -559,7 +559,7 @@ namespace Cahut_Backend.Controllers
                         data = new
                         {
                             slideId = currentSlide is not null ? currentSlide.SlideId : null,
-                            slideType = currentSlide is not null ? currentSlide.SlideType: null,
+                            slideType = currentSlide is not null ? currentSlide.SlideType : null,
                         },
                         message = "Get current slide successfully"
                     };
@@ -588,7 +588,7 @@ namespace Cahut_Backend.Controllers
             {
                 bool isJoinedGroup = provider.Group.AlreadyJoinedGroup(userId, Guid.Parse(groupId));
                 bool isOwner = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
-                if(isOwner || isJoinedGroup)
+                if (isOwner || isJoinedGroup)
                 {
                     Slide currentSlide = provider.Presentation.GetCurrentSlide(Guid.Parse(presentationId));
                     return new ResponseMessage
@@ -651,7 +651,7 @@ namespace Cahut_Backend.Controllers
                     message = "Only presentation onwner can get next slide"
                 };
             }
-            if(presentationType == "group")
+            if (presentationType == "group")
             {
                 string userRole = provider.Group.GetMemberRoleInGroup(userId, Guid.Parse(groupId));
                 bool isJoinedGroup = provider.Group.AlreadyJoinedGroup(userId, Guid.Parse(groupId));
@@ -696,7 +696,7 @@ namespace Cahut_Backend.Controllers
             string presentationType = provider.Presentation.GetPresentationType(Guid.Parse(presentationId));
             bool isOwner = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
             if (presentationType == "public")
-            { 
+            {
                 if (isOwner)
                 {
                     if (!provider.Presentation.isPresentating(Guid.Parse(presentationId)))
@@ -723,7 +723,7 @@ namespace Cahut_Backend.Controllers
                     message = "Only presentation onwner can get previous slide"
                 };
             }
-            if(presentationType == "group")
+            if (presentationType == "group")
             {
                 string userRole = provider.Group.GetMemberRoleInGroup(userId, Guid.Parse(groupId));
                 bool isJoinedGroup = provider.Group.AlreadyJoinedGroup(userId, Guid.Parse(groupId));
@@ -852,7 +852,7 @@ namespace Cahut_Backend.Controllers
             } catch
             {
                 canParse = false;
-                
+
             }
             if (canParse is false)
             {
@@ -944,6 +944,103 @@ namespace Cahut_Backend.Controllers
                     collabPresentations = collabPresentations.Count
                 },
                 message = "Get number of presentations successfully"
+            };
+        }
+
+        [HttpGet("/presentation/get/multipleChoiceQuestions"), Authorize]
+        public ResponseMessage GetMultipleChoiceQuestions(string presentationId)
+        {
+            Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            if (provider.Presentation.GetPresentationType(Guid.Parse(presentationId)) == "group")
+            {
+                Guid presentingGroup = provider.Presentation.GetPresentGroup(Guid.Parse(presentationId));
+                if (provider.Group.GetMemberRoleInGroup(userId, presentingGroup) == "Co-owner" || provider.Group.GetMemberRoleInGroup(userId, presentingGroup) == "Owner")
+                {
+                    return new ResponseMessage
+                    {
+                        status = true,
+                        data = provider.MultipleChoiceSlide.GetMultipleChoiceQuestion(Guid.Parse(presentationId)),
+                        message = "Get questions successfully"
+                    };
+                }
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Only owner and co-owner can get questions"
+                };
+            }
+            if (provider.Presentation.GetPresentationType(Guid.Parse(presentationId)) == "public")
+            {
+                if (provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId)) {
+                    return new ResponseMessage
+                    {
+                        status = true,
+                        data = provider.MultipleChoiceSlide.GetMultipleChoiceQuestion(Guid.Parse(presentationId)),
+                        message = "Get questions successfully"
+                    };
+                }
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Only owner can get questions"
+                };
+            }
+            return new ResponseMessage
+            {
+                status = false,
+                data = null,
+                message = "Invalide presentation type"
+            };
+        }
+
+        [HttpGet("/presentation/get/choiceResult"), Authorize]
+        public ResponseMessage GetChoiceResult(string presentationId, string questionId)
+        {
+            Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            if (provider.Presentation.GetPresentationType(Guid.Parse(presentationId)) == "group")
+            {
+                Guid presentingGroup = provider.Presentation.GetPresentGroup(Guid.Parse(presentationId));
+                if (provider.Group.GetMemberRoleInGroup(userId, presentingGroup) == "Co-owner" || provider.Group.GetMemberRoleInGroup(userId, presentingGroup) == "Owner")
+                {
+                    return new ResponseMessage
+                    {
+                        status = true,
+                        data = provider.UserSubmitChoice.GetChoiceResult(questionId),
+                        message = "Get choice result successfully"
+                    };
+                }
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Only owner and co-owner can get result"
+                };
+            }
+            if (provider.Presentation.GetPresentationType(Guid.Parse(presentationId)) == "public")
+            {
+                if (provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId))
+                {
+                    return new ResponseMessage
+                    {
+                        status = true,
+                        data = provider.UserSubmitChoice.GetChoiceResult(questionId),
+                        message = "Get result successfully"
+                    };
+                }
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Only owner can get result"
+                };
+            }
+            return new ResponseMessage
+            {
+                status = false,
+                data = null,
+                message = "Invalide presentation type"
             };
         }
     }

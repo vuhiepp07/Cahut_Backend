@@ -68,5 +68,10 @@ namespace Cahut_Backend.Repository
             context.SaveChanges();
             return questionId;
         }
+
+        public bool IsUserSubmitted(Guid userId, string questionId)
+        {
+            return context.UserSubmitChoice.Any(c => c.UserId == userId && c.QuestionId == questionId);
+        }
     }
 }

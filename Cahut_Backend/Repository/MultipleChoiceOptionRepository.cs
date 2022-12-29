@@ -64,10 +64,34 @@ namespace Cahut_Backend.Repository
             return res;
         }
 
-        public int IncreaseByOne(string optionId)
+        public string GetMultipleChoiceQuestion(string optionId)
+        {
+            return context.MultipleChoiceOption.Find(optionId).QuestionId;
+        }
+
+        public int IncreaseByOne(string optionId, Guid userId)
         {
             MultipleChoiceOption option = context.MultipleChoiceOption.Find(optionId);
             option.NumSelected = option.NumSelected + 1;
+
+            MultipleChoiceQuestion question = context.MultipleChoiceQuestion.Find(option.QuestionId);
+            MultipleChoiceSlide slide = context.MultipleChoiceSlide.Find(question.SlideId);
+            Presentation presentation = context.Presentation.Find(slide.PresentationId);
+
+            if(presentation.IsBeingPresented && presentation.PresentationType == "group")
+            {
+                Guid groupId = context.Group.Where(g => g.PresentationId == presentation.PresentationId.ToString())
+                                        .Select(g => g.GroupId).FirstOrDefault();
+                UserSubmitChoice submitGroupChoice = new UserSubmitChoice
+                {
+                    UserId = userId,
+                    QuestionId = option.QuestionId,
+                    GroupId = groupId,
+                    OptionId = optionId,
+                    SubmitTime = DateTime.UtcNow.AddHours(7),
+                };
+                context.UserSubmitChoice.Add(submitGroupChoice);
+            }
             if (context.SaveChanges() > 1)
             {
                 return option.NumSelected;

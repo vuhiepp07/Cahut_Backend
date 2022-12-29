@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace Cahut_Backend.Controllers
@@ -48,6 +50,14 @@ namespace Cahut_Backend.Controllers
         [HttpGet("/question/getQuestions")]
         public ResponseMessage GetQuestions(string presentationId)
         {
+            string userId = Guid.Empty.ToString();
+            var accessToken = Request.Headers[HeaderNames.Authorization].ToString().Replace("Bearer ", "");
+            if (accessToken != null && accessToken != string.Empty)
+            {
+                JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+                userId = handler.ReadJwtToken(accessToken).Claims.First(claim => claim.Type == "nameid").Value;
+            }
+
             if (!provider.Presentation.isPresentating(Guid.Parse(presentationId)))
             {
                 return new ResponseMessage
@@ -69,7 +79,7 @@ namespace Cahut_Backend.Controllers
             return new ResponseMessage
             {
                 status = true,
-                data = provider.PresentationQuestion.GetPresentationQuestions(Guid.Parse(presentationId)),
+                data = provider.PresentationQuestion.GetPresentationQuestions(Guid.Parse(presentationId), Guid.Parse(userId)),
                 message = "Get presentation questions successfully"
             };
         }
@@ -77,6 +87,7 @@ namespace Cahut_Backend.Controllers
         [HttpPost("/question/upVoteQuestion")]
         public ResponseMessage UpvoteQuestion(string questionId)
         {
+
             Guid presentationId = provider.PresentationQuestion.GetPresentationId(questionId);
             if (!provider.Presentation.isPresentating(presentationId))
             {
@@ -89,12 +100,29 @@ namespace Cahut_Backend.Controllers
             }
             if (provider.PresentationQuestion.IsQuestionExisted(questionId))
             {
-                int upvoteResult = provider.PresentationQuestion.UpVoteQuestion(questionId);
+                string userId = Guid.Empty.ToString();
+                var accessToken = Request.Headers[HeaderNames.Authorization].ToString().Replace("Bearer ", "");
+                if (accessToken != null && accessToken != string.Empty)
+                {
+                    JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+                    userId = handler.ReadJwtToken(accessToken).Claims.First(claim => claim.Type == "nameid").Value;
+                }
+
+                if (!provider.PresentationQuestion.IsUpvote(questionId, Guid.Parse(userId)))
+                {
+                    int upvoteResult = provider.PresentationQuestion.UpVoteQuestion(questionId, Guid.Parse(userId));
+                    return new ResponseMessage
+                    {
+                        status = upvoteResult > 0 ? true : false,
+                        data = null,
+                        message = upvoteResult > 0 ? "Upvote question successfully" : "Failed to upvote question"
+                    };
+                }
                 return new ResponseMessage
                 {
-                    status = upvoteResult > 0 ? true : false,
+                    status = false,
                     data = null,
-                    message = upvoteResult > 0 ? "Upvote question successfully" : "Failed to upvote question"
+                    message = "User has already upvote"
                 };
             }
             return new ResponseMessage

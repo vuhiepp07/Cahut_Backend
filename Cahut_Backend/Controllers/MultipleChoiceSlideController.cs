@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace Cahut_Backend.Controllers
@@ -362,22 +364,64 @@ namespace Cahut_Backend.Controllers
             };
         }
 
+        [HttpGet("/slide/multiplechoice/checkSubmitted")]
+        public ResponseMessage CheckSubmitted(string questionId)
+        {
+            string userId = Guid.Empty.ToString();
+            var accessToken = Request.Headers[HeaderNames.Authorization].ToString().Replace("Bearer ", "");
+            if (accessToken != null && accessToken != string.Empty)
+            {
+                JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+                userId = handler.ReadJwtToken(accessToken).Claims.First(claim => claim.Type == "nameid").Value;
+                bool isSubmitted = provider.MultipleChoiceQuestion.IsUserSubmitted(Guid.Parse(userId), questionId);
+                return new ResponseMessage
+                {
+                    status = isSubmitted ? false : true,
+                    data = null,
+                    message = isSubmitted ? "User has submitted this question" : "User can submit this question"
+                };
+            }
+            return new ResponseMessage
+            {
+                status = false,
+                data = null,
+                message = "Record only stored in group present"
+            };
+        }
+
         [HttpPost("/slide/multiplechoice/submitchoice")]
         public ResponseMessage SubmitChoice(string optionId)
         {
+
+
             bool optionExist = provider.MultipleChoiceOption.MultipleChoiceOptionIdExisted(optionId);
             if (optionExist)
             {
-                int increaseResult = provider.MultipleChoiceOption.IncreaseByOne(optionId);
-                if(increaseResult > 0)
+                string userId = Guid.Empty.ToString();
+                var accessToken = Request.Headers[HeaderNames.Authorization].ToString().Replace("Bearer ", "");
+                if (accessToken != null && accessToken != string.Empty)
                 {
-                    return new ResponseMessage
-                    {
-                        status = true,
-                        data = new {currentSelected = increaseResult},
-                        message = "Submit choice success"
-                    };
+                    JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+                    userId = handler.ReadJwtToken(accessToken).Claims.First(claim => claim.Type == "nameid").Value;
                 }
+
+                string questionId = provider.MultipleChoiceOption.GetMultipleChoiceQuestion(optionId);
+
+                if (!provider.MultipleChoiceQuestion.IsUserSubmitted(Guid.Parse(userId), questionId))
+                {
+
+                    int increaseResult = provider.MultipleChoiceOption.IncreaseByOne(optionId, Guid.Parse(userId));
+                    if (increaseResult > 0)
+                    {
+                        return new ResponseMessage
+                        {
+                            status = true,
+                            data = new { currentSelected = increaseResult },
+                            message = "Submit choice success"
+                        };
+                    }
+                }
+
                 return new ResponseMessage
                 {
                     status = false,

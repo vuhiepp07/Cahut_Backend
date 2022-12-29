@@ -39,5 +39,20 @@ namespace Cahut_Backend.Repository
             Guid presentationId = context.MultipleChoiceSlide.Find(slideId).PresentationId;
             return presentationId;
         }
+
+        public List<object> GetMultipleChoiceQuestion(Guid presentationId)
+        {
+            var questions = from slide in context.MultipleChoiceSlide
+                                    join multipleQuestion in context.MultipleChoiceQuestion
+                                    on slide.SlideId equals multipleQuestion.SlideId
+                                    where slide.PresentationId == presentationId
+                                    select multipleQuestion.Content;
+            List<object> multipleChoiceQuestion = new List<object>();
+            foreach(var question in questions)
+            {
+                multipleChoiceQuestion.Add(new {question = question});
+            }
+            return multipleChoiceQuestion;
+        }
     }
 }
