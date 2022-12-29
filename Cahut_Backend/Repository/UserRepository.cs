@@ -191,7 +191,8 @@ namespace Cahut_Backend.Repository
                 Email = email,
                 UserName = name,
                 Avatar = avatar,
-                Password = Helper.Hash(email + "^@#%!@(!&^$" + "gggggggg")
+                Password = Helper.Hash(email + "^@#%!@(!&^$" + "gggggggg"),
+                AccountStatus = 1
             };
             context.User.Add(usr);
             return context.SaveChanges();

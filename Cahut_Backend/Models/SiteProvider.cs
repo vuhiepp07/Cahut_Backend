@@ -159,5 +159,31 @@ namespace Cahut_Backend.Models
                 return headingSlide;
             }
         }
+
+        UserUpvoteQuestionRepository userUpvoteQuestion;
+        public UserUpvoteQuestionRepository UserUpvoteQuestion
+        {
+            get
+            {
+                if (userUpvoteQuestion == null)
+                {
+                    userUpvoteQuestion = new UserUpvoteQuestionRepository(Context);
+                }
+                return userUpvoteQuestion;
+            }
+        }
+
+        UserSubmitChoiceRepository userSubmitChoice;
+        public UserSubmitChoiceRepository UserSubmitChoice
+        {
+            get
+            {
+                if (userSubmitChoice == null)
+                {
+                    userSubmitChoice = new UserSubmitChoiceRepository(Context);
+                }
+                return userSubmitChoice;
+            }
+        }
     }
 }
