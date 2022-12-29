@@ -141,6 +141,16 @@ namespace Cahut_Backend.Repository
             return res;
         }
 
+        public List<string> GetGrpEmails(Guid groupId)
+        {
+            var res = from detail in context.GroupDetail
+                     join user in context.User
+                     on detail.MemberId equals user.UserId
+                     where detail.GroupId == groupId
+                     select user.Email;
+            return res.ToList();
+        }
+
         public List<object> GetJoinedGroup(Guid userId)
         {
              var res = from detail in context.GroupDetail
@@ -207,7 +217,7 @@ namespace Cahut_Backend.Repository
 
         public Guid GetGroupByPresentationId(string presentationId)
         {
-            Group group = context.Group.Where(p => p.PresentationId == presentationId).SingleOrDefault();
+            Group group = context.Group.Where(p => p.PresentationId == presentationId).FirstOrDefault();
             return group.GroupId;
         }
 

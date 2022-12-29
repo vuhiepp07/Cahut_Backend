@@ -68,12 +68,12 @@ namespace Cahut_Backend.Repository
             return presentationQuestions;
         }
 
-        public int MarkedAsAnswered(string questionId)
+        public int UpdateQuestionAnswered(string questionId)
         {
             PresentationQuestion presentationQuestion = context.PresentationQuestion.Find(questionId);
             if(presentationQuestion != null)
             {
-                presentationQuestion.isAnswered = true;
+                presentationQuestion.isAnswered = !presentationQuestion.isAnswered;
                 return context.SaveChanges();
             }
             return 0;

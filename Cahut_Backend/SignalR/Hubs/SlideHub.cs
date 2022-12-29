@@ -10,9 +10,10 @@ namespace Cahut_Backend.SignalR.Hubs
 {
     public class SlideHub: Hub
     {
-        Dictionary<string, string> hubConnection = new Dictionary<string, string>();
-        private readonly static ConnectionStorage<string> _connections =
-            new ConnectionStorage<string>();
+        public static Dictionary<string, string> hubConnection = new Dictionary<string, string>();
+        private readonly static ConnectionStorage<string> _connections = new ConnectionStorage<string>();
+        public readonly static ConnectionStorage<string> _userConnections = new ConnectionStorage<string>();
+
         public async Task SendResult(string presentationId, string message)
         {
             Console.WriteLine("Send message to all " + presentationId);
@@ -47,14 +48,35 @@ namespace Cahut_Backend.SignalR.Hubs
             }
         }
 
+        public async Task NotifyGroupPresent(string groupId)
+        {
+            foreach (var connectionId in _connections.GetConnections(groupId))
+            {
+                await Clients.Client(connectionId).SendAsync("NotifyGroup", groupId);
+            }
+        }
+
         public override Task OnConnectedAsync()
         {
+            //user
+            string accessToken = Context.GetHttpContext().Request.Query["access_token"];
+            if(accessToken != null)
+            {
+                JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+                string email = handler.ReadJwtToken(accessToken).Claims.First(claim => claim.Type == "email").Value;
+                Console.WriteLine(email);
+                _userConnections.Add(email, Context.ConnectionId);
+                Console.WriteLine("num of user: " + _userConnections.Count);
+            }
+
+            //presentation
             string presentationId = Context.GetHttpContext().Request.Query["presentationId"];
             if(presentationId != null)
             {
                 _connections.Add(presentationId, Context.ConnectionId);
                 Console.WriteLine(Context.ConnectionId);
                 Console.WriteLine("presentationId " + presentationId + " has :" + _connections.GetConnections(presentationId).Count() + " connections");
+                
             }
             
             return base.OnConnectedAsync();

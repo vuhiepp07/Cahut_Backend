@@ -1,10 +1,14 @@
 ﻿using Cahut_Backend.Models;
+using Cahut_Backend.SignalR.Hubs;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json.Linq;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
+
 
 namespace Cahut_Backend.Controllers
 {
@@ -12,6 +16,13 @@ namespace Cahut_Backend.Controllers
     [ApiController]
     public class PresentationController : BaseController
     {
+        private readonly IHubContext<SlideHub> _hubContext;
+
+        public PresentationController(IHubContext<SlideHub> hubContext):base()
+        {
+            _hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
+        }
+
         [HttpGet("/presentation/getslides"), Authorize]
         public ResponseMessage GetPresentationSlide(string presentationId)
         {
@@ -232,7 +243,7 @@ namespace Cahut_Backend.Controllers
 
             List<string> exisedEmail = new List<string>();
 
-            
+            string errorMessage = "";
 
             bool addYourself = false;
 
@@ -244,10 +255,15 @@ namespace Cahut_Backend.Controllers
                 foreach (var email in emails)
                 {
                     bool isEmailExisted = provider.User.CheckEmailExisted(email);
+                    if (!isEmailExisted)
+                    {
+                        errorMessage += " There are some email does not existed in system ";
+                    }
                     Guid user = provider.User.GetUserIdByUserEmail(email);
                     if (user.Equals(userId))
                     {
                         addYourself = true;
+                        errorMessage += " Cannot add your self ";
                     }
                     bool isAdded = provider.Presentation.AddCollaborators(Guid.Parse(presentationId), email);
                     if (isAdded)
@@ -276,35 +292,26 @@ namespace Cahut_Backend.Controllers
                     {
                         status = false,
                         data = exisedEmail,
-                        message = "Some emails cannot be added"
+                        message = "Some emails cannot be added" + errorMessage
                     };
                 }
 
-                if (collabAdded != emails.Count && collabAdded > 0 && addYourself)
+                if (collabAdded != emails.Count && collabAdded > 0)
                 {
                     return new ResponseMessage
                     {
                         status = false,
                         data = exisedEmail,
-                        message = "Cannot add yourself as collaborators, other emails had been added"
+                        message = "Cannot add yourself as collaborators, other emails had been added" + errorMessage
                     };
                 }
 
-                if (addYourself)
-                {
-                    return new ResponseMessage
-                    {
-                        status = false,
-                        data = null,
-                        message = "Cannot add your self as collaborator"
-                    };
-                }
 
                 return new ResponseMessage
                 {
                     status = false,
                     data = exisedEmail,
-                    message = "Failed to add"
+                    message = "Failed to add " + errorMessage
                 };
                 
             }      
@@ -313,7 +320,7 @@ namespace Cahut_Backend.Controllers
             {
                 status = false,
                 data = null,
-                message = "Add collaborators failed, please try again"
+                message = "Add collaborators failed, presentation does not existed"
             };
         }
 
@@ -387,7 +394,7 @@ namespace Cahut_Backend.Controllers
         }
 
         [HttpGet("/presentation/groupPresent")]
-        public ResponseMessage GroupPresent(string presentationId, string groupName)
+        public  ResponseMessage GroupPresent(string presentationId, string groupName)
         {
             Models.Group group = provider.Group.GetGroupByName(groupName);
             if(group == null)
@@ -424,10 +431,20 @@ namespace Cahut_Backend.Controllers
                 }
 
                 int isPresent = provider.Presentation.StartGroupPresentation(Guid.Parse(presentationId), groupId);
+                List<string> emails = provider.Group.GetGrpEmails(groupId);
+                foreach(string email in emails)
+                {
+                    foreach (var connectionId in SlideHub._userConnections.GetConnections(email))
+                    {
+                        Console.WriteLine(connectionId);
+                        _hubContext.Clients.Client(connectionId).SendAsync("NotifyGroup", new {grpName= groupName, link= "http://localhost:3000/view/" + presentationId,});
+                    }
+                }
+                //_hubContext.Clients.Client().SendMessage(presentationId, "Presenting in group");
                 return new ResponseMessage
                 {
                     status = true,
-                    data = null,
+                    data = emails,
                     message = "presenting in group"
                 };
             }
@@ -477,40 +494,54 @@ namespace Cahut_Backend.Controllers
         [HttpGet("/presentation/endPresentation")]
         public ResponseMessage EndPresentation(string presentationId)
         {
+            if (!provider.Presentation.isPresentating(Guid.Parse(presentationId)))
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Presentation has been already ended"
+                };
+            }
             Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             bool isCollab = provider.Presentation.isCollaborator(Guid.Parse(presentationId), userId);
             bool isOwner = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
-            if (provider.Presentation.GetPresentationType(Guid.Parse(presentationId)) == "group") {
+            if (provider.Presentation.GetPresentationType(Guid.Parse(presentationId)) == "group")
+            {
                 Guid presentingGroup = provider.Presentation.GetPresentGroup(Guid.Parse(presentationId));
-                if (provider.Group.GetMemberRoleInGroup(userId, presentingGroup) != "Co-owner")
+                if (provider.Group.GetMemberRoleInGroup(userId, presentingGroup) == "Co-owner" || provider.Group.GetMemberRoleInGroup(userId, presentingGroup) == "Owner")
                 {
+                    int isEnd = provider.Presentation.EndPresentation(Guid.Parse(presentationId));
                     return new ResponseMessage
                     {
-                        status = false,
+                        status = isEnd > 0 ? true : false,
                         data = null,
-                        message = "Only owner and Co-owner can end presentation"
+                        message = isEnd > 0 ? "End a presentation" : "Failed to end presentation"
                     };
                 }
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Only owner and Co-owner can end presentation"
+                };
             }
-            
-                if (!provider.Presentation.isPresentating(Guid.Parse(presentationId)))
-                {
-                    return new ResponseMessage
-                    {
-                        status = false,
-                        data = null,
-                        message = "Presentation has been already ended"
-                    };
-                }
+            if((provider.Presentation.GetPresentationType(Guid.Parse(presentationId)) == "public"))
+            {
                 int isEnd = provider.Presentation.EndPresentation(Guid.Parse(presentationId));
                 return new ResponseMessage
                 {
                     status = isEnd > 0 ? true : false,
                     data = null,
-                    message = isEnd > 0 ? "End a presentation":"Failed to end presentation"
+                    message = isEnd > 0 ? "End a presentation" : "Failed to end presentation"
                 };
-            
-
+            }
+            return new ResponseMessage
+            {
+                status = false,
+                data = null,
+                message = "Invalid presenting type"
+            };
         }
 
         [HttpGet("/presentation/public/currentSlide")]

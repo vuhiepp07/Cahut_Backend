@@ -136,8 +136,8 @@ namespace Cahut_Backend.Controllers
             };
         }
 
-        [HttpPost("/question/markAnswered"), Authorize]
-        public ResponseMessage MarkAnswered(string questionId, string groupId)
+        [HttpPost("/question/updateQuestionAnswered"), Authorize]
+        public ResponseMessage UpdateQuestionAnswered(string questionId, string groupId)
         {
             if (!provider.PresentationQuestion.IsQuestionExisted(questionId))
             {
@@ -165,12 +165,12 @@ namespace Cahut_Backend.Controllers
             {
                 if (isOwner)
                 {
-                    int isAnswered = provider.PresentationQuestion.MarkedAsAnswered(questionId);
+                    int isAnswered = provider.PresentationQuestion.UpdateQuestionAnswered(questionId);
                     return new ResponseMessage
                     {
                         status = isAnswered > 0 ? true : false,
                         data = null,
-                        message = isAnswered > 0 ? "Question has been marked as answered" : "Failed to marked answered question"
+                        message = isAnswered > 0 ? "Question answered status has been updated" : "Failed to update answered question status"
                     };
                 }
             }
@@ -178,12 +178,12 @@ namespace Cahut_Backend.Controllers
                 string role = provider.Group.GetMemberRoleInGroup(userId, Guid.Parse(groupId));
                 if(isOwner || role == "Co-owner")
                 {
-                    int isAnswered = provider.PresentationQuestion.MarkedAsAnswered(questionId);
+                    int isAnswered = provider.PresentationQuestion.UpdateQuestionAnswered(questionId);
                     return new ResponseMessage
                     {
                         status = isAnswered > 0 ? true : false,
                         data = null,
-                        message = isAnswered > 0 ? "Question has been marked as answered" : "Failed to marked answered question"
+                        message = isAnswered > 0 ? "Question answered status has been updated" : "Failed to update answered question status"
                     };
                 }
             }

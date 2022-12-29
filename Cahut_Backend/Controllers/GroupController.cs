@@ -1,6 +1,8 @@
 ﻿using Cahut_Backend.Models;
+using Cahut_Backend.SignalR.Hubs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json.Linq;
 using System.Security.Claims;
 

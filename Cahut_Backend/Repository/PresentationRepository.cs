@@ -256,7 +256,14 @@ namespace Cahut_Backend.Repository
             Presentation present = context.Presentation.Find(presentationId);
             present.IsBeingPresented = false;
             present.PresentationType = null;
-            
+
+            Group presetatingGroup = context.Group.Where(group => group.PresentationId == presentationId.ToString()).Select(g => g).FirstOrDefault();
+            if (presetatingGroup != null)
+            {
+                presetatingGroup.PresentationId = null;
+                presetatingGroup.HasPresentationPresenting = false;
+            }
+
             Slide currentSlide = GetCurrentSlide(presentationId);
             if(currentSlide is not null)
             {
@@ -268,12 +275,7 @@ namespace Cahut_Backend.Repository
                 return context.SaveChanges();
             }
 
-            Group presetatingGroup = context.Group.Where(group => group.PresentationId == presentationId.ToString()).Select(g => g).FirstOrDefault();
-            if (presetatingGroup != null)
-            {
-                presetatingGroup.PresentationId = null;
-                presetatingGroup.HasPresentationPresenting = false;
-            }
+            
 
             return context.SaveChanges();
 
