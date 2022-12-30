@@ -283,7 +283,12 @@ namespace Cahut_Backend.Repository
 
         public bool isPresentating(Guid presentationId)
         {
-            return context.Presentation.Find(presentationId).IsBeingPresented;
+            Presentation presentation = context.Presentation.Find(presentationId);
+            if (presentation != null && presentation.IsBeingPresented)
+            {
+                return true;
+            }
+            return false;
         }
 
         public int EndGroupPresentation(Guid presentationId, Guid groupId)

@@ -46,11 +46,11 @@ namespace Cahut_Backend.Repository
                                     join multipleQuestion in context.MultipleChoiceQuestion
                                     on slide.SlideId equals multipleQuestion.SlideId
                                     where slide.PresentationId == presentationId
-                                    select multipleQuestion.Content;
+                                    select multipleQuestion;
             List<object> multipleChoiceQuestion = new List<object>();
             foreach(var question in questions)
             {
-                multipleChoiceQuestion.Add(new {question = question});
+                multipleChoiceQuestion.Add(new {content = question.Content, questionId = question.QuestionId});
             }
             return multipleChoiceQuestion;
         }
