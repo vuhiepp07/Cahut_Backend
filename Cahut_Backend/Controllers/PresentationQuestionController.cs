@@ -155,21 +155,12 @@ namespace Cahut_Backend.Controllers
                     JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
                     userId = handler.ReadJwtToken(accessToken).Claims.First(claim => claim.Type == "nameid").Value;
                 }
-                if (!provider.PresentationQuestion.IsVote(questionId, Guid.Parse(userId)))
-                {
-                    int unupvoteResult = provider.PresentationQuestion.UnUpVoteQuestion(questionId, Guid.Parse(userId));
-                    return new ResponseMessage
-                    {
-                        status = unupvoteResult > 0 ? true : false,
-                        data = null,
-                        message = unupvoteResult > 0 ? " UnUpvote question successfully" : "Failed to unupvote question"
-                    };
-                }
+                int unupvoteResult = provider.PresentationQuestion.UnUpVoteQuestion(questionId, Guid.Parse(userId));
                 return new ResponseMessage
                 {
-                    status = false,
+                    status = unupvoteResult > 0 ? true : false,
                     data = null,
-                    message = "User has already vote"
+                    message = unupvoteResult > 0 ? " UnUpvote question successfully" : "Failed to unupvote question"
                 };
             }
             return new ResponseMessage

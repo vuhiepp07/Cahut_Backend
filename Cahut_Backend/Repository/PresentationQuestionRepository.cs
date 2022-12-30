@@ -68,19 +68,27 @@ namespace Cahut_Backend.Repository
                 Guid presentationId = GetPresentationId(questionId);
                 Group presetatingGroup = context.Group.Where(group => group.PresentationId == presentationId.ToString()).Select(g => g).FirstOrDefault();
                 presentationQuestion.NumUpVote = presentationQuestion.NumUpVote - 1;
-                if (userId != Guid.Empty)
-                {
-                    UserUpvoteQuestion upvoteHistory = new UserUpvoteQuestion
-                    {
-                        QuestionId = questionId,
-                        PresentationId = presentationQuestion.PresentationId,
-                        GroupId = presetatingGroup != null ? presetatingGroup.GroupId : Guid.Empty,
-                        UserId = userId,
-                        TimeUpVote = DateTime.UtcNow.AddHours(7),
-                    };
-                    context.UserUpvoteQuestion.Add(upvoteHistory);
 
+                UserUpvoteQuestion userUpvoteQuestion = context.UserUpvoteQuestion.Where(q => q.QuestionId == questionId).FirstOrDefault();
+                if (userUpvoteQuestion != null)
+                {
+                    context.UserUpvoteQuestion.Remove(userUpvoteQuestion);
                 }
+                //if (userId != Guid.Empty)
+                //{
+                    
+
+                //    UserUpvoteQuestion upvoteHistory = new UserUpvoteQuestion
+                //    {
+                //        QuestionId = questionId,
+                //        PresentationId = presentationQuestion.PresentationId,
+                //        GroupId = presetatingGroup != null ? presetatingGroup.GroupId : Guid.Empty,
+                //        UserId = userId,
+                //        TimeUpVote = DateTime.UtcNow.AddHours(7),
+                //    };
+                //    context.UserUpvoteQuestion.Add(upvoteHistory);
+
+                //}
                 return context.SaveChanges();
             }
             return 0;

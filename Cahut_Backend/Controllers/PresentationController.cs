@@ -229,8 +229,49 @@ namespace Cahut_Backend.Controllers
             };
         }
 
-        [HttpPost("/presentation/addCollaborators"), Authorize]
+        [HttpPost("/presentation/addCollaborator"), Authorize]
         public ResponseMessage AddCollaborator(object addCollaboratorModel)
+        {
+            Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            JObject objTemp = JObject.Parse(addCollaboratorModel.ToString());
+            string presentationId = (string)objTemp["presentationId"];
+            string email = (string)objTemp["email"];
+
+            //check add yourself
+            Guid user = provider.User.GetUserIdByUserEmail(email);
+            if (user.Equals(userId))
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Cannot add yourself as collaborator"
+                };
+            }
+            if (!provider.User.CheckEmailExisted(email))
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Email does not existed"
+                };
+            }
+            bool addResult = provider.Presentation.AddCollaborators(Guid.Parse(presentationId), email);
+            return new ResponseMessage
+            {
+                status = addResult ? true : false,
+                data = null,
+                message = addResult ? "Add collaborator successfully" : "Failed to add collaborator, user is already a collaborator"
+            };
+
+        }
+
+        
+
+        [HttpPost("/presentation/addCollaborators"), Authorize]
+        public ResponseMessage AddCollaborators(object addCollaboratorModel)
         {
 
             Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));

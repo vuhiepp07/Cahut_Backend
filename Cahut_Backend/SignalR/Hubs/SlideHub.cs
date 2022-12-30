@@ -25,10 +25,13 @@ namespace Cahut_Backend.SignalR.Hubs
 
         public async Task SendMessage(string presentationId, string message)
         {
+            AppDbContext context = new AppDbContext();
+            ChatRepository chatRepository = new ChatRepository(context);
+            List<object> chatMessages = chatRepository.GetChatFromPresentation(Guid.Parse(presentationId));
             Console.WriteLine("Send " + message + " to all " + presentationId);
             foreach (var connectionId in _connections.GetConnections(presentationId))
             {
-                await Clients.Client(connectionId).SendAsync("ReceiveMessage", presentationId, message);
+                await Clients.Client(connectionId).SendAsync("ReceiveMessage", presentationId, chatMessages.Last());
             }
         }
 
