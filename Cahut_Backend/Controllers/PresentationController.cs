@@ -444,12 +444,15 @@ namespace Cahut_Backend.Controllers
                 {
                     presentLink += "/presentation/present/" + presentationId;
                 }
-                presentLink += "/view/" + presentationId;
+                else
+                {
+                    presentLink += "/view/" + presentationId;
+                }
                 foreach (var connectionId in SlideHub._userConnections.GetConnections(email))
                 {
                     
                     Console.WriteLine(connectionId);
-                    _hubContext.Clients.Client(connectionId).SendAsync("NotifyGroup", new { grpName = groupName, link = presentLink, });
+                    _hubContext.Clients.Client(connectionId).SendAsync("NotifyGroup", new { grpName = groupName, link = presentLink });
                 }
             }
             return new ResponseMessage
