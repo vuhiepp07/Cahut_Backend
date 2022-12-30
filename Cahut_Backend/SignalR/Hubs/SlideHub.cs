@@ -16,7 +16,6 @@ namespace Cahut_Backend.SignalR.Hubs
 
         public async Task SendResult(string presentationId, string message)
         {
-            Console.WriteLine("Send message to all " + presentationId);
             foreach (var connectionId in _connections.GetConnections(presentationId))
             {
                 await Clients.Client(connectionId).SendAsync("ReceiveResult", presentationId, message);
@@ -26,6 +25,7 @@ namespace Cahut_Backend.SignalR.Hubs
 
         public async Task SendMessage(string presentationId, string message)
         {
+            Console.WriteLine("Send " + message + " to all " + presentationId);
             foreach (var connectionId in _connections.GetConnections(presentationId))
             {
                 await Clients.Client(connectionId).SendAsync("ReceiveMessage", presentationId, message);
@@ -37,6 +37,14 @@ namespace Cahut_Backend.SignalR.Hubs
             foreach (var connectionId in _connections.GetConnections(presentationId))
             {
                 await Clients.Client(connectionId).SendAsync("ReceiveQuestion", presentationId, question);
+            }
+        }
+
+        public async Task ChangeQuestionStatus(string presentationId, string question)
+        {
+            foreach (var connectionId in _connections.GetConnections(presentationId))
+            {
+                await Clients.Client(connectionId).SendAsync("ChangeQuestionStatus", presentationId, question);
             }
         }
 
@@ -64,9 +72,7 @@ namespace Cahut_Backend.SignalR.Hubs
             {
                 JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
                 string email = handler.ReadJwtToken(accessToken).Claims.First(claim => claim.Type == "email").Value;
-                Console.WriteLine(email);
                 _userConnections.Add(email, Context.ConnectionId);
-                Console.WriteLine("num of user: " + _userConnections.Count);
             }
 
             //presentation
@@ -74,7 +80,6 @@ namespace Cahut_Backend.SignalR.Hubs
             if(presentationId != null)
             {
                 _connections.Add(presentationId, Context.ConnectionId);
-                Console.WriteLine(Context.ConnectionId);
                 Console.WriteLine("presentationId " + presentationId + " has :" + _connections.GetConnections(presentationId).Count() + " connections");
                 
             }

@@ -29,7 +29,7 @@ namespace Cahut_Backend.Repository
             return context.SaveChanges();
         }
 
-        public bool IsUpvote(string questionId, Guid userId)
+        public bool IsVote(string questionId, Guid userId)
         {
             return context.PresentationQuestion.Any(q => q.QuestionId == questionId && q.UserUpvoteQuestions.Any(q => q.UserId == userId && q.QuestionId == questionId));
         }
@@ -53,9 +53,6 @@ namespace Cahut_Backend.Repository
                         TimeUpVote = DateTime.UtcNow.AddHours(7),
                     };
                     context.UserUpvoteQuestion.Add(upvoteHistory);
-                    //PresentationQuestion question = context.PresentationQuestion.Find(questionId);
-                    //question.UserUpvoteQuestions.Add(upvoteHistory);
-                    //context.PresentationQuestion.Find(questionId).UserUpvoteQuestions.Add(upvoteHistory);
 
                 }
                 return context.SaveChanges();
@@ -63,12 +60,27 @@ namespace Cahut_Backend.Repository
             return 0;
         }
 
-        public int UnUpVoteQuestion(string questionId)
+        public int UnUpVoteQuestion(string questionId, Guid userId)
         {
             PresentationQuestion presentationQuestion = context.PresentationQuestion.Find(questionId);
             if (questionId != null)
             {
+                Guid presentationId = GetPresentationId(questionId);
+                Group presetatingGroup = context.Group.Where(group => group.PresentationId == presentationId.ToString()).Select(g => g).FirstOrDefault();
                 presentationQuestion.NumUpVote = presentationQuestion.NumUpVote - 1;
+                if (userId != Guid.Empty)
+                {
+                    UserUpvoteQuestion upvoteHistory = new UserUpvoteQuestion
+                    {
+                        QuestionId = questionId,
+                        PresentationId = presentationQuestion.PresentationId,
+                        GroupId = presetatingGroup != null ? presetatingGroup.GroupId : Guid.Empty,
+                        UserId = userId,
+                        TimeUpVote = DateTime.UtcNow.AddHours(7),
+                    };
+                    context.UserUpvoteQuestion.Add(upvoteHistory);
+
+                }
                 return context.SaveChanges();
             }
             return 0;

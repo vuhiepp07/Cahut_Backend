@@ -418,6 +418,7 @@ namespace Cahut_Backend.Controllers
             }
             bool isCollab = provider.Presentation.isCollaborator(Guid.Parse(presentationId), userId);
             bool isOwner = provider.Presentation.presentationExisted(Guid.Parse(presentationId), userId);
+            int presentGroup = 0;
             if (isCollab || isOwner)
             {
                 if (provider.Presentation.isPresentating(Guid.Parse(presentationId)))
@@ -429,25 +430,34 @@ namespace Cahut_Backend.Controllers
                         message = "presention is being presented"
                     };
                 }
-
-                int isPresent = provider.Presentation.StartGroupPresentation(Guid.Parse(presentationId), groupId);
-                List<string> emails = provider.Group.GetGrpEmails(groupId);
-                foreach (string email in emails)
-                {
-                    foreach (var connectionId in SlideHub._userConnections.GetConnections(email))
-                    {
-                        Console.WriteLine(connectionId);
-                        _hubContext.Clients.Client(connectionId).SendAsync("NotifyGroup", new { grpName = groupName, link = Helper.TestingLink + "/view/" + presentationId, });
-                    }
-                }
-                //_hubContext.Clients.Client().SendMessage(presentationId, "Presenting in group");
-                return new ResponseMessage
-                {
-                    status = true,
-                    data = emails,
-                    message = "presenting in group"
-                };
+                presentGroup = provider.Presentation.StartGroupPresentation(Guid.Parse(presentationId), groupId);
             }
+
+           
+            List<string> emails = provider.Group.GetGrpEmails(groupId);
+            foreach (string email in emails)
+            {
+                Guid user = provider.User.GetUserIdByUserEmail(email);
+                string role = provider.Group.GetMemberRoleInGroup(user, groupId);
+                string presentLink = Helper.TestingLink;
+                if (role == "Owner" || role == "Co-owner")
+                {
+                    presentLink += "/presentation/present/" + presentationId;
+                }
+                presentLink += "/view/" + presentationId;
+                foreach (var connectionId in SlideHub._userConnections.GetConnections(email))
+                {
+                    
+                    Console.WriteLine(connectionId);
+                    _hubContext.Clients.Client(connectionId).SendAsync("NotifyGroup", new { grpName = groupName, link = presentLink, });
+                }
+            }
+            return new ResponseMessage
+            {
+                status = true,
+                data = emails,
+                message = "presenting in group"
+            };
 
             return new ResponseMessage
             {

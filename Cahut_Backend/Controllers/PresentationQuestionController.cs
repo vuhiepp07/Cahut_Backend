@@ -108,7 +108,7 @@ namespace Cahut_Backend.Controllers
                     userId = handler.ReadJwtToken(accessToken).Claims.First(claim => claim.Type == "nameid").Value;
                 }
 
-                if (!provider.PresentationQuestion.IsUpvote(questionId, Guid.Parse(userId)))
+                if (!provider.PresentationQuestion.IsVote(questionId, Guid.Parse(userId)))
                 {
                     int upvoteResult = provider.PresentationQuestion.UpVoteQuestion(questionId, Guid.Parse(userId));
                     return new ResponseMessage
@@ -122,7 +122,7 @@ namespace Cahut_Backend.Controllers
                 {
                     status = false,
                     data = null,
-                    message = "User has already upvote"
+                    message = "User has already vote"
                 };
             }
             return new ResponseMessage
@@ -148,12 +148,28 @@ namespace Cahut_Backend.Controllers
             }
             if (provider.PresentationQuestion.IsQuestionExisted(questionId))
             {
-                int unupvoteResult = provider.PresentationQuestion.UnUpVoteQuestion(questionId);
+                string userId = Guid.Empty.ToString();
+                var accessToken = Request.Headers[HeaderNames.Authorization].ToString().Replace("Bearer ", "");
+                if (accessToken != null && accessToken != string.Empty)
+                {
+                    JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+                    userId = handler.ReadJwtToken(accessToken).Claims.First(claim => claim.Type == "nameid").Value;
+                }
+                if (!provider.PresentationQuestion.IsVote(questionId, Guid.Parse(userId)))
+                {
+                    int unupvoteResult = provider.PresentationQuestion.UnUpVoteQuestion(questionId, Guid.Parse(userId));
+                    return new ResponseMessage
+                    {
+                        status = unupvoteResult > 0 ? true : false,
+                        data = null,
+                        message = unupvoteResult > 0 ? " UnUpvote question successfully" : "Failed to unupvote question"
+                    };
+                }
                 return new ResponseMessage
                 {
-                    status = unupvoteResult > 0 ? true : false,
+                    status = false,
                     data = null,
-                    message = unupvoteResult > 0 ? " UnUpvote question successfully" : "Failed to unupvote question"
+                    message = "User has already vote"
                 };
             }
             return new ResponseMessage
