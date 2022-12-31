@@ -114,6 +114,44 @@ namespace Cahut_Backend.Repository
             return presentationQuestions;
         }
 
+        public List<object> GetAnsweredQuestions(Guid presentationId, Guid userId)
+        {
+            List<Object> presentationQuestions = new List<Object>();
+            List<PresentationQuestion> questionList = context.PresentationQuestion.Where(q => q.PresentationId == presentationId && q.isAnswered == true)
+                                                                                    .Select(q => q).ToList();
+            foreach (var question in questionList)
+            {
+                presentationQuestions.Add(new
+                {
+                    isUpvote = context.UserUpvoteQuestion.Any(q => q.UserId == userId && q.QuestionId == question.QuestionId),
+                    questionId = question.QuestionId,
+                    question = question.Content,
+                    numUpVote = question.NumUpVote,
+                    isAnswered = question.isAnswered
+                }); ; ;
+            }
+            return presentationQuestions;
+        }
+
+        public List<object> GetUnAnsweredQuestions(Guid presentationId, Guid userId)
+        {
+            List<Object> presentationQuestions = new List<Object>();
+            List<PresentationQuestion> questionList = context.PresentationQuestion.Where(q => q.PresentationId == presentationId && q.isAnswered == false)
+                                                                                    .Select(q => q).ToList();
+            foreach (var question in questionList)
+            {
+                presentationQuestions.Add(new
+                {
+                    isUpvote = context.UserUpvoteQuestion.Any(q => q.UserId == userId && q.QuestionId == question.QuestionId),
+                    questionId = question.QuestionId,
+                    question = question.Content,
+                    numUpVote = question.NumUpVote,
+                    isAnswered = question.isAnswered
+                }); ; ;
+            }
+            return presentationQuestions;
+        }
+
         public int UpdateQuestionAnswered(string questionId)
         {
             PresentationQuestion presentationQuestion = context.PresentationQuestion.Find(questionId);

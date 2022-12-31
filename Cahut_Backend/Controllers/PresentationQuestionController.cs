@@ -84,6 +84,81 @@ namespace Cahut_Backend.Controllers
             };
         }
 
+        [HttpGet("/question/getAnsweredQuestions")]
+        public ResponseMessage GetAnsweredQuestion(string presentationId)
+        {
+            string userId = Guid.Empty.ToString();
+            var accessToken = Request.Headers[HeaderNames.Authorization].ToString().Replace("Bearer ", "");
+            if (accessToken != null && accessToken != string.Empty)
+            {
+                JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+                userId = handler.ReadJwtToken(accessToken).Claims.First(claim => claim.Type == "nameid").Value;
+            }
+
+            if (!provider.Presentation.isPresentating(Guid.Parse(presentationId)))
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Presentation has not been presented yet"
+                };
+            }
+            if (provider.Presentation.GetPresentationName(Guid.Parse(presentationId)) == null)
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Presentation does not existed",
+                };
+            }
+            return new ResponseMessage
+            {
+                status = true,
+                data = provider.PresentationQuestion.GetAnsweredQuestions(Guid.Parse(presentationId), Guid.Parse(userId)),
+                message = "Get presentation questions successfully"
+            };
+        }
+
+        [HttpGet("/question/getUnAnsweredQuestions")]
+        public ResponseMessage GetUnansweredQuestion(string presentationId)
+        {
+            string userId = Guid.Empty.ToString();
+            var accessToken = Request.Headers[HeaderNames.Authorization].ToString().Replace("Bearer ", "");
+            if (accessToken != null && accessToken != string.Empty)
+            {
+                JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+                userId = handler.ReadJwtToken(accessToken).Claims.First(claim => claim.Type == "nameid").Value;
+            }
+
+            if (!provider.Presentation.isPresentating(Guid.Parse(presentationId)))
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Presentation has not been presented yet"
+                };
+            }
+            if (provider.Presentation.GetPresentationName(Guid.Parse(presentationId)) == null)
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Presentation does not existed",
+                };
+            }
+            return new ResponseMessage
+            {
+                status = true,
+                data = provider.PresentationQuestion.GetUnAnsweredQuestions(Guid.Parse(presentationId), Guid.Parse(userId)),
+                message = "Get presentation questions successfully"
+            };
+        }
+
+
         [HttpPost("/question/upVoteQuestion")]
         public ResponseMessage UpvoteQuestion(string questionId)
         {
