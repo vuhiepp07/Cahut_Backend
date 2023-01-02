@@ -50,7 +50,7 @@ namespace CahutBackend.Migrations
                     AccountStatus = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
                     RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ResetPasswordString = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    RefreshTokenExpiredTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2022, 12, 28, 18, 9, 59, 950, DateTimeKind.Utc).AddTicks(4231))
+                    RefreshTokenExpiredTime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValue: new DateTime(2023, 1, 2, 16, 49, 41, 359, DateTimeKind.Utc).AddTicks(7869))
                 },
                 constraints: table =>
                 {
@@ -247,7 +247,8 @@ namespace CahutBackend.Migrations
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PresentationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     NumUpVote = table.Column<int>(type: "int", nullable: false),
-                    isAnswered = table.Column<bool>(type: "bit", nullable: false)
+                    isAnswered = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {

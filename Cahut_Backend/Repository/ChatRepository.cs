@@ -31,7 +31,7 @@ namespace Cahut_Backend.Repository
                                     .Select(c => c)
                                     .FirstOrDefault();
             List<ChatMessage> chatMessages = context.ChatMessage.Where(m => m.ChatId == chat.ChatId)
-                                                                .Select(m => m)
+                                                                .Select(m => m).OrderBy(p => p.TimeSend)
                                                                 .ToList();
             List<object> messages = new List<object>();
             foreach(var message in chatMessages)

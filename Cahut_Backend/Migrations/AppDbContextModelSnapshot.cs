@@ -332,7 +332,7 @@ namespace CahutBackend.Migrations
                     b.Property<DateTime>("RefreshTokenExpiredTime")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2022, 12, 28, 18, 9, 59, 950, DateTimeKind.Utc).AddTicks(4231));
+                        .HasDefaultValue(new DateTime(2023, 1, 2, 16, 49, 41, 359, DateTimeKind.Utc).AddTicks(7869));
 
                     b.Property<string>("ResetPasswordString")
                         .HasColumnType("nvarchar(max)");
@@ -428,6 +428,9 @@ namespace CahutBackend.Migrations
             modelBuilder.Entity("Cahut_Backend.Models.PresentationQuestion", b =>
                 {
                     b.HasBaseType("Cahut_Backend.Models.Question");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("NumUpVote")
                         .HasColumnType("int");

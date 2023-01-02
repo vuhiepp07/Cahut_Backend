@@ -21,6 +21,7 @@ namespace Cahut_Backend.Repository
                 QuestionType = "Presentation",
                 Content = questionContent,
                 isAnswered = false,
+                CreatedDate = DateTime.UtcNow.AddHours(7),
                 NumUpVote = 0,
                 PresentationId = presentationId,
                 UserUpvoteQuestions = new List<UserUpvoteQuestion>(),
@@ -99,7 +100,7 @@ namespace Cahut_Backend.Repository
             
             List<Object> presentationQuestions = new List<Object>();
             List<PresentationQuestion> questionList = context.PresentationQuestion.Where(q => q.PresentationId == presentationId)
-                                                                                    .Select(q => q).ToList();
+                                                                                    .Select(q => q).OrderBy(p => p.CreatedDate).ToList();
             foreach(var question in questionList)
             {
                 presentationQuestions.Add(new
@@ -118,7 +119,7 @@ namespace Cahut_Backend.Repository
         {
             List<Object> presentationQuestions = new List<Object>();
             List<PresentationQuestion> questionList = context.PresentationQuestion.Where(q => q.PresentationId == presentationId && q.isAnswered == true)
-                                                                                    .Select(q => q).ToList();
+                                                                                    .Select(q => q).OrderBy(p => p.CreatedDate).ToList();
             foreach (var question in questionList)
             {
                 presentationQuestions.Add(new
@@ -137,7 +138,7 @@ namespace Cahut_Backend.Repository
         {
             List<Object> presentationQuestions = new List<Object>();
             List<PresentationQuestion> questionList = context.PresentationQuestion.Where(q => q.PresentationId == presentationId && q.isAnswered == false)
-                                                                                    .Select(q => q).ToList();
+                                                                                    .Select(q => q).OrderBy(p => p.CreatedDate).ToList();
             foreach (var question in questionList)
             {
                 presentationQuestions.Add(new
