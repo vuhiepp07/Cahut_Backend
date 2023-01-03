@@ -158,6 +158,97 @@ namespace Cahut_Backend.Controllers
             };
         }
 
+        [HttpGet("/question/get/questionSortedByVote")]
+        public ResponseMessage GetQuestionSortedByVote(string presentationId, string sortType)
+        {
+            string userId = Guid.Empty.ToString();
+            var accessToken = Request.Headers[HeaderNames.Authorization].ToString().Replace("Bearer ", "");
+            if (accessToken != null && accessToken != string.Empty)
+            {
+                JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+                userId = handler.ReadJwtToken(accessToken).Claims.First(claim => claim.Type == "nameid").Value;
+            }
+
+            if (!provider.Presentation.isPresentating(Guid.Parse(presentationId)))
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Presentation has not been presented yet"
+                };
+            }
+            if (provider.Presentation.GetPresentationName(Guid.Parse(presentationId)) == null)
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Presentation does not existed",
+                };
+            }
+            if (sortType != "Descending" && sortType != "Ascending")
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Invalid sort type, sort type must be Descending or Ascending"
+                };
+            }
+            return new ResponseMessage
+            {
+                status = true,
+                data = provider.PresentationQuestion.GetQuestionsSortedByVote(Guid.Parse(presentationId), Guid.Parse(userId), sortType),
+                message = "Get presentation questions successfully"
+            };
+        }
+
+        [HttpGet("/question/get/questionSortedByTime")]
+        public ResponseMessage GetQuestionSortedByTime(string presentationId, string sortType)
+        {
+            string userId = Guid.Empty.ToString();
+            var accessToken = Request.Headers[HeaderNames.Authorization].ToString().Replace("Bearer ", "");
+            if (accessToken != null && accessToken != string.Empty)
+            {
+                JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+                userId = handler.ReadJwtToken(accessToken).Claims.First(claim => claim.Type == "nameid").Value;
+            }
+
+            if (!provider.Presentation.isPresentating(Guid.Parse(presentationId)))
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Presentation has not been presented yet"
+                };
+            }
+            if (provider.Presentation.GetPresentationName(Guid.Parse(presentationId)) == null)
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Presentation does not existed",
+                };
+            }
+            if (sortType != "Descending" && sortType != "Ascending")
+            {
+                return new ResponseMessage
+                {
+                    status = false,
+                    data = null,
+                    message = "Invalid sort type, sort type must be Descending or Ascending"
+                };
+            }
+            return new ResponseMessage
+            {
+                status = true,
+                data = provider.PresentationQuestion.GetQuestionsSortedByTime(Guid.Parse(presentationId), Guid.Parse(userId), sortType),
+                message = "Get presentation questions successfully"
+            };
+        }
 
         [HttpPost("/question/upVoteQuestion")]
         public ResponseMessage UpvoteQuestion(string questionId)

@@ -709,7 +709,7 @@ namespace Cahut_Backend.Controllers
             {
                 string userRole = provider.Group.GetMemberRoleInGroup(userId, Guid.Parse(groupId));
                 bool isJoinedGroup = provider.Group.AlreadyJoinedGroup(userId, Guid.Parse(groupId));
-                if (isOwner && isJoinedGroup && (userRole == "Co-owner" || userRole == "Owner"))
+                if (isJoinedGroup && (userRole == "Co-owner" || userRole == "Owner"))
                 {
                     if (!provider.Presentation.isPresentating(Guid.Parse(presentationId)))
                     {
@@ -781,7 +781,7 @@ namespace Cahut_Backend.Controllers
             {
                 string userRole = provider.Group.GetMemberRoleInGroup(userId, Guid.Parse(groupId));
                 bool isJoinedGroup = provider.Group.AlreadyJoinedGroup(userId, Guid.Parse(groupId));
-                if (isOwner && isJoinedGroup && (userRole == "Co-owner" || userRole == "Owner"))
+                if (isJoinedGroup && (userRole == "Co-owner" || userRole == "Owner"))
                 {
                     if (!provider.Presentation.isPresentating(Guid.Parse(presentationId)))
                     {
