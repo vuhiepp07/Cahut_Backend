@@ -180,12 +180,12 @@ namespace Cahut_Backend.Repository
             List<PresentationQuestion> questionList = new List<PresentationQuestion>();
             if (sortType == "Descending")
             {
-                questionList = context.PresentationQuestion.Where(q => q.PresentationId == presentationId && q.isAnswered == false)
+                questionList = context.PresentationQuestion.Where(q => q.PresentationId == presentationId)
                                                                                     .Select(q => q).OrderByDescending(p => p.CreatedDate).ToList();
             }
             if(sortType == "Ascending")
             {
-                questionList = context.PresentationQuestion.Where(q => q.PresentationId == presentationId && q.isAnswered == false)
+                questionList = context.PresentationQuestion.Where(q => q.PresentationId == presentationId)
                                                                                     .Select(q => q).OrderBy(p => p.CreatedDate).ToList();
             }
             foreach (var question in questionList)
@@ -208,12 +208,12 @@ namespace Cahut_Backend.Repository
             List<PresentationQuestion> questionList = new List<PresentationQuestion>();
             if (sortType == "Descending")
             {
-                questionList = context.PresentationQuestion.Where(q => q.PresentationId == presentationId && q.isAnswered == false)
+                questionList = context.PresentationQuestion.Where(q => q.PresentationId == presentationId)
                                                                                     .Select(q => q).OrderByDescending(p => p.NumUpVote).ToList();
             }
             if (sortType == "Ascending")
             {
-                questionList = context.PresentationQuestion.Where(q => q.PresentationId == presentationId && q.isAnswered == false)
+                questionList = context.PresentationQuestion.Where(q => q.PresentationId == presentationId)
                                                                                     .Select(q => q).OrderBy(p => p.NumUpVote).ToList();
             }
             foreach (var question in questionList)
