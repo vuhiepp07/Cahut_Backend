@@ -43,7 +43,7 @@ namespace Cahut_Backend.Repository
                 Guid presentationId = GetPresentationId(questionId);
                 Group presetatingGroup = context.Group.Where(group => group.PresentationId == presentationId.ToString()).Select(g => g).FirstOrDefault();
                 presentationQuestion.NumUpVote = presentationQuestion.NumUpVote + 1;
-                if (userId != Guid.Empty)
+                if (userId != Guid.Empty && presetatingGroup != null)
                 {
                     UserUpvoteQuestion upvoteHistory = new UserUpvoteQuestion
                     {
@@ -70,7 +70,7 @@ namespace Cahut_Backend.Repository
                 Group presetatingGroup = context.Group.Where(group => group.PresentationId == presentationId.ToString()).Select(g => g).FirstOrDefault();
                 presentationQuestion.NumUpVote = presentationQuestion.NumUpVote - 1;
 
-                UserUpvoteQuestion userUpvoteQuestion = context.UserUpvoteQuestion.Where(q => q.QuestionId == questionId).FirstOrDefault();
+                UserUpvoteQuestion userUpvoteQuestion = context.UserUpvoteQuestion.Where(q => q.QuestionId == questionId && q.UserId == userId).FirstOrDefault();
                 if (userUpvoteQuestion != null)
                 {
                     context.UserUpvoteQuestion.Remove(userUpvoteQuestion);
